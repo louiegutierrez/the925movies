@@ -7,7 +7,9 @@
                 type="javax.sql.DataSource"
                 driverClassName="com.mysql.cj.jdbc.Driver"
                 url="jdbc:mysql://localhost:3306/moviedb"
-                username="mytestuser"
-                password="My6$Password"
+                username="The925"
+                password="marty&amp;louie"
         />
+        <!--                username="mytestuser"-->
+        <!--                password="My6$Password"-->
 </Context>
