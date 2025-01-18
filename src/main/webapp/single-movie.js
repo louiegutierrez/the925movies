@@ -14,32 +14,33 @@ function handleMovieResult(resultData) {
     console.log("handleStarResult: populating star table from resultData");
     console.log(resultData);
     let singleMovieTitleElement = jQuery("#single_movie_title");
+    let singleMovieYearElement = jQuery("#single_movie_year");
+    let singleMovieDirectorElement = jQuery("#single_movie_director");
+    let singleMovieGenreElement = jQuery("#single_movie_genre");
+
     singleMovieTitleElement.append($(`<h1>${resultData[0]['title']}</h1>`));
+    singleMovieYearElement.append($(`<h2>Made in ${resultData[0]['year']}</h2>`));
+    singleMovieDirectorElement.append($(`<h2>Directed by ${resultData[0]['director']}</h2>`));
+    singleMovieGenreElement.append($(`<h2>Genre(s): ${resultData[0]['all_genres']}</h2>`));
+
 
     let starTableBodyElement = jQuery("#single_movie_table");
-    let rowHTML = "";
-    rowHTML += "<tr>";
-
-    rowHTML += `<th> ${resultData[0]['year']} </th>`;
-    rowHTML += `<th> ${resultData[0]['director']} </th>`;
-    rowHTML += `<th> ${resultData[0]['all_genres']} </th>`;
-
     let star_names = resultData[0]['all_star_names'].split(", ");
     let star_ids = resultData[0]['all_star_ids'].split(", ");
 
-    let star_string =
-        "<th>" +
-        star_names.map((name, j) =>
-            `<a href="single-star.html?id=${star_ids[j]}">${name}</a>`
-        ).join(", ") +
-        "</th>";
+    for (let i = 0; i < star_ids.length; i++) {
+        console.log(star_ids[i]);
+        console.log(star_names[i]);
+        let star_id = star_ids[i];
+        let star_name = star_names[i];
 
-    rowHTML += star_string;
-    rowHTML += `<th> ${resultData[0]['rating']} </th>`;
-
-    rowHTML += "</tr>";
-
-    starTableBodyElement.append(rowHTML);
+        let rowHTML = "";
+        rowHTML += "<tr>";
+        let star_string = `<th> <a href="single-star.html?id=${star_id}">${star_name}</a></th>`;
+        rowHTML += star_string;
+        rowHTML += "</tr>";
+        starTableBodyElement.append(rowHTML);
+    }
 }
 
 let movieId = getParameterByName('id');

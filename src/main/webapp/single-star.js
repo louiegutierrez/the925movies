@@ -17,24 +17,21 @@ function handleStarResult(resultData) {
     console.log("handleStarResult: populating star table from resultData");
     console.log(resultData);
     let singleStarNameElement = jQuery("#single_star_name");
+    let singleStarBirthElement = jQuery("#single_star_birth");
+
     singleStarNameElement.append($(`<h1>${resultData[0]['name']}</h1>`));
-    //
+    singleStarBirthElement.append($(`<h2>Year of Birth: ${resultData[0]['birth_year']}</h2>`));
+
     let starTableBodyElement = jQuery("#single_star_table");
-    let rowHTML = "";
-    rowHTML += "<tr>";
-    rowHTML += `<th> ${resultData[0]['birth_year']} </th>`;
-    rowHTML += `<th> <a href="single-movie.html?id=${resultData[0]['movie_id']}"> ${resultData[0]['movie_title']} </a> </th>`;
-    // let movie_string =
-    //     "<th>" +
-    //     resultData[0]['movie_titles'].map((name, j) =>
-    //         `<a href="single-star.html?id=${resultData[0]['movie_ids'][j]}">${name}</a>`
-    //     ).join(", ") +
-    //     "</th>";
-
-    // rowHTML += movie_string;
-
-    rowHTML += "</tr>";
-    starTableBodyElement.append(rowHTML);
+    for (let i = 0; i < resultData.length; i++) {
+        let movieId = resultData[i]["movie_id"];
+        let movieTitle = resultData[i]["movie_title"];
+        let rowHTML = "";
+        rowHTML += "<tr>";
+        rowHTML += `<td><a href="single-movie.html?id=${movieId}">${movieTitle}</a></td>`;
+        rowHTML += "</tr>";
+        starTableBodyElement.append(rowHTML);
+    }
 }
 
 let starId = getParameterByName('id');
