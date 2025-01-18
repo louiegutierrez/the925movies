@@ -38,41 +38,49 @@ public class MovieListServlet extends HttpServlet {
         try (Connection conn = dataSource.getConnection()) {
             Statement statement = conn.createStatement();
             String query = """
-                SELECT
+                    SELECT
                     m.id AS movie_id,
                     m.title,
                     m.year,
                     m.director,
+                
                     SUBSTRING_INDEX(
                         GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', '),
                         ', ',
                         3
                     ) AS three_genres,
+                
                     SUBSTRING_INDEX(
                         GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', '),
                         ', ',
                         3
                     ) AS three_stars,
+                
                     SUBSTRING_INDEX(
                         GROUP_CONCAT(DISTINCT s.id ORDER BY s.name SEPARATOR ', '),
                         ', ',
                         3
                     ) AS three_star_ids,
-                    r.rating AS rating
-                FROM movies m
-                JOIN ratings r ON r.movieId = m.id
+                
+                    top20.rating
+                
+                FROM (
+                    SELECT r.movieId, r.rating
+                    FROM ratings r
+                    ORDER BY r.rating DESC
+                    LIMIT 20
+                ) AS top20
+
+                JOIN movies m ON m.id = top20.movieId
+                
                 LEFT JOIN genres_in_movies gim ON gim.movieId = m.id
                 LEFT JOIN genres g            ON g.id = gim.genreId
+                
                 LEFT JOIN stars_in_movies sim ON sim.movieId = m.id
                 LEFT JOIN stars s             ON s.id = sim.starId
-                GROUP BY
-                    m.id,
-                    m.title,
-                    m.year,
-                    m.director,
-                    r.rating
-                ORDER BY r.rating DESC
-                LIMIT 20;""";
+                
+                GROUP BY m.id, m.title, m.year, m.director, top20.rating
+                ORDER BY top20.rating DESC;""";
 
 
             // Perform the query
