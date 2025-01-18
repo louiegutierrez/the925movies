@@ -4,6 +4,8 @@
 #### VIDEO URL : (INSERT URL HERE)
 
 #### MARTIN CONTRIBUTIONS:
+- Set up html & js files
+- Styles pages with CSS
 
 
 #### LEONARDO CONTRIBUTIONS:
