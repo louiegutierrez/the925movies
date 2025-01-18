@@ -17,11 +17,13 @@ function handleMovieResult(resultData) {
     let singleMovieYearElement = jQuery("#single_movie_year");
     let singleMovieDirectorElement = jQuery("#single_movie_director");
     let singleMovieGenreElement = jQuery("#single_movie_genre");
+    let singleMovieRatingElement = jQuery("#single_movie_rating");
 
     singleMovieTitleElement.append($(`<h1>${resultData[0]['title']}</h1>`));
     singleMovieYearElement.append($(`<h2>Made in ${resultData[0]['year']}</h2>`));
     singleMovieDirectorElement.append($(`<h2>Directed by ${resultData[0]['director']}</h2>`));
     singleMovieGenreElement.append($(`<h2>Genre(s): ${resultData[0]['all_genres']}</h2>`));
+    singleMovieRatingElement.append($(`<h2>Rating: ${resultData[0]['rating']}</h2>`));
 
 
     let starTableBodyElement = jQuery("#single_movie_table");
