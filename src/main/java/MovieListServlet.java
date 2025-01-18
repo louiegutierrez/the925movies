@@ -40,39 +40,39 @@ public class MovieListServlet extends HttpServlet {
             String query = """
                 SELECT
                     m.id AS movie_id,
-                    m.title AS title,
-                    m.year AS year,
-                    m.director AS director,
-            
+                    m.title,
+                    m.year,
+                    m.director,
                     SUBSTRING_INDEX(
-                        GROUP_CONCAT(DISTINCT g.name SEPARATOR ', '),
+                        GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', '),
                         ', ',
                         3
                     ) AS three_genres,
-            
                     SUBSTRING_INDEX(
-                        GROUP_CONCAT(DISTINCT s.name SEPARATOR ', '),
+                        GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', '),
                         ', ',
                         3
                     ) AS three_stars,
-            
                     SUBSTRING_INDEX(
-                        GROUP_CONCAT(DISTINCT s.id SEPARATOR ', '),
+                        GROUP_CONCAT(DISTINCT s.id ORDER BY s.name SEPARATOR ', '),
                         ', ',
                         3
                     ) AS three_star_ids,
-            
                     r.rating AS rating
                 FROM movies m
                 JOIN ratings r ON r.movieId = m.id
                 LEFT JOIN genres_in_movies gim ON gim.movieId = m.id
-                LEFT JOIN genres g ON g.id = gim.genreId
+                LEFT JOIN genres g            ON g.id = gim.genreId
                 LEFT JOIN stars_in_movies sim ON sim.movieId = m.id
-                LEFT JOIN stars s ON s.id = sim.starId
-                GROUP BY m.id, m.title, m.year, m.director, r.rating
+                LEFT JOIN stars s             ON s.id = sim.starId
+                GROUP BY
+                    m.id,
+                    m.title,
+                    m.year,
+                    m.director,
+                    r.rating
                 ORDER BY r.rating DESC
-                LIMIT 20;
-            """;
+                LIMIT 20;""";
 
 
             // Perform the query

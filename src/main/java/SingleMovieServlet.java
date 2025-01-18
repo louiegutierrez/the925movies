@@ -45,9 +45,9 @@ public class SingleMovieServlet extends HttpServlet {
                         m.title as title,
                         m.year as year,
                         m.director as director,
-                        GROUP_CONCAT(DISTINCT g.name SEPARATOR ', ') AS all_genres,
-                        GROUP_CONCAT(DISTINCT s.id SEPARATOR ', ') AS all_star_ids,
-                        GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS all_star_names,
+                        GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS all_genres,
+                        GROUP_CONCAT(DISTINCT s.id ORDER BY s.name SEPARATOR ', ') AS all_star_ids,
+                        GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS all_star_names,
                         r.rating as rating
                     FROM movies m
                     JOIN ratings r ON r.movieId = m.id
