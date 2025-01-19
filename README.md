@@ -1,11 +1,11 @@
 # CS122B PROJECT 1
 ## BY LEONARDO GUTIERREZ && MARTIN KIMBALL
 
-#### VIDEO URL : (INSERT URL HERE)
+#### VIDEO URL : (https://www.youtube.com/watch?v=tmeFcptb0Jc)
 
 #### MARTIN CONTRIBUTIONS:
 - Set up html & js files
-- Styles pages with CSS
+- Styled pages with CSS
 
 
 #### LEONARDO CONTRIBUTIONS:
