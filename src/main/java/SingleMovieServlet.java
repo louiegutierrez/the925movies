@@ -39,29 +39,23 @@ public class SingleMovieServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try (Connection conn = dataSource.getConnection()) {
-            String query = """
-                    SELECT
-                        m.id AS movie_id,
-                        m.title as title,
-                        m.year as year,
-                        m.director as director,
-                        GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS all_genres,
-                        GROUP_CONCAT(DISTINCT s.id ORDER BY s.name SEPARATOR ', ') AS all_star_ids,
-                        GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS all_star_names,
-                        r.rating as rating
-                    FROM movies m
-                    JOIN ratings r ON r.movieId = m.id
-                    LEFT JOIN genres_in_movies gim ON gim.movieId = m.id
-                    LEFT JOIN genres g ON g.id = gim.genreId
-                    LEFT JOIN stars_in_movies sim ON sim.movieId = m.id
-                    LEFT JOIN stars s ON s.id = sim.starId
-                    WHERE m.id = ?
-                    GROUP BY m.id,
-                             m.title,
-                             m.year,
-                             m.director,
-                             r.rating;
-                    """;
+            String query = "SELECT "
+                    + "    m.id AS movie_id, "
+                    + "    m.title AS title, "
+                    + "    m.year AS year, "
+                    + "    m.director AS director, "
+                    + "    GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS all_genres, "
+                    + "    GROUP_CONCAT(DISTINCT s.id ORDER BY s.name SEPARATOR ', ') AS all_star_ids, "
+                    + "    GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS all_star_names, "
+                    + "    r.rating AS rating "
+                    + "FROM movies m "
+                    + "JOIN ratings r ON r.movieId = m.id "
+                    + "LEFT JOIN genres_in_movies gim ON gim.movieId = m.id "
+                    + "LEFT JOIN genres g ON g.id = gim.genreId "
+                    + "LEFT JOIN stars_in_movies sim ON sim.movieId = m.id "
+                    + "LEFT JOIN stars s ON s.id = sim.starId "
+                    + "WHERE m.id = ? "
+                    + "GROUP BY m.id, m.title, m.year, m.director, r.rating;";
 
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, id);

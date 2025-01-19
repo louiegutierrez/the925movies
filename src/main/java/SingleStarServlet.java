@@ -39,17 +39,16 @@ public class SingleStarServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try (Connection conn = dataSource.getConnection()) {
-            String query = """
-                    SELECT
-                       s.name,
-                       IF(s.birthYear IS NULL, 'N/A', CAST(s.birthYear AS CHAR)) AS birth_year,
-                       m.id AS movie_id,
-                       m.title AS movie_title
-                    FROM stars s
-                    LEFT JOIN stars_in_movies sim ON sim.starId = s.id
-                    LEFT JOIN movies m ON m.id = sim.movieId
-                    WHERE s.id = ?;
-                   """;
+            String query = "SELECT "
+                    + "    s.name, "
+                    + "    IF(s.birthYear IS NULL, 'N/A', CAST(s.birthYear AS CHAR)) AS birth_year, "
+                    + "    m.id AS movie_id, "
+                    + "    m.title AS movie_title "
+                    + "FROM stars s "
+                    + "LEFT JOIN stars_in_movies sim ON sim.starId = s.id "
+                    + "LEFT JOIN movies m ON m.id = sim.movieId "
+                    + "WHERE s.id = ?;";
+
 
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, id);
