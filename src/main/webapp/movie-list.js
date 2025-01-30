@@ -1,14 +1,23 @@
 function handleStarResult(resultData) {
-    console.log("handleStarResult: populating star table from resultData");
+    console.log("handleStarResult: populating starsssss table from resultData");
     console.log(resultData);
-    let starTableBodyElement = jQuery("#movie_table_body");
 
-    //map first 20 entries
-    for (let i = 0; i < Math.min(20, resultData.length); i++) {
+    const entries_per_page = 20;
+    const len = Math.min(resultData.length, entries_per_page);
+
+    let movieListBodyElement = jQuery("#movie_table_body");
+
+    if (len === 0) {
+        console.log("n/a");
+        jQuery("#na").text("N/A, no results found");
+        jQuery("#movie_table_body").empty();
+        return;
+    }
+
+    for (let i = 0; i < len; i++) {
         let rowHTML = "";
         rowHTML += "<tr>";
 
-        // rowHTML += `<th> ${resultData[i]['title']} </th>`;
         rowHTML += `<th> <a href="single-movie.html?id=${resultData[i]['movie_id']}">${resultData[i]['title']}</a> </th>`;
         rowHTML += `<th> ${resultData[i]['year']} </th>`;
         rowHTML += `<th> ${resultData[i]['director']} </th>`;
@@ -28,14 +37,28 @@ function handleStarResult(resultData) {
         rowHTML += `<th> ${resultData[i]['rating']} </th>`;
 
         rowHTML += "</tr>";
-
-        starTableBodyElement.append(rowHTML);
+        movieListBodyElement.append(rowHTML);
     }
 }
 
-jQuery.ajax({
-    dataType: "json",
-    method: "GET",
-    url: "api/movielist",
-    success: (resultData) => handleStarResult(resultData)
-});
+
+const urlParams = new URLSearchParams(window.location.search);
+console.log(urlParams);
+if(urlParams.size === 0){
+    console.log("default");
+    jQuery.ajax({
+        dataType: "json",
+        method: "GET",
+        url: "api/movielist",
+        success: (resultData) => handleStarResult(resultData)
+    });
+} else {
+    console.log("url");
+    jQuery.ajax({
+        dataType: "json",
+        method: "GET",
+        url: "api/search",
+        success: (resultData) => handleStarResult(resultData)
+    });
+}
+
