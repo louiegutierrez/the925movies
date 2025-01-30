@@ -1,16 +1,16 @@
-function handleLoginResult(resultDataString) {
-    let resultDataJson = JSON.parse(resultDataString);
-
+function handleLoginResult(resultData) {
     console.log("handle login response");
-    console.log(resultDataJson);
-    console.log(resultDataJson["status"]);
+    console.log(resultData);
+    console.log(resultData["status"]);
 
-    if (resultDataJson["status"] === "success") {
+    // If login succeeds, redirect the user to index.html
+    if (resultData["status"] === "success") {
         window.location.replace("index.html");
     } else {
+        // If login fails, display the error message
         console.log("show error message");
-        console.log(resultDataJson["message"]);
-        $("#login_error_message").text(resultDataJson["message"]);
+        console.log(resultData["message"]);
+        $("#login_error_message").text(resultData["message"]);
     }
 }
 
