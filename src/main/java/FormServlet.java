@@ -32,8 +32,9 @@ public class FormServlet extends HttpServlet {
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        String username = request.getParameter("username");
+        String username = request.getParameter("email");
         String password = request.getParameter("password");
+
 
         // confirm from database if it contains this username and password
         JsonObject responseJsonObject = new JsonObject();
