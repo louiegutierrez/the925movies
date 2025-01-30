@@ -57,7 +57,7 @@ if(urlParams.size === 0){
     jQuery.ajax({
         dataType: "json",
         method: "GET",
-        url: "api/search",
+        url: "api/search?" + urlParams.toString(),
         success: (resultData) => handleStarResult(resultData)
     });
 }
