@@ -18,6 +18,12 @@ function submitLoginForm(formSubmitEvent) {
     console.log("submit login form");
     formSubmitEvent.preventDefault();
 
+    let email = $("#email").val();
+    let password = $("#password").val();
+
+    console.log("Email:", email);
+    console.log("Password:", password);
+
     $.ajax({
         url: "api/login",
         method: "POST",
