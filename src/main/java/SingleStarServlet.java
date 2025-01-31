@@ -39,15 +39,18 @@ public class SingleStarServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try (Connection conn = dataSource.getConnection()) {
-            String query = "SELECT "
-                    + "    s.name, "
-                    + "    IF(s.birthYear IS NULL, 'N/A', CAST(s.birthYear AS CHAR)) AS birth_year, "
-                    + "    m.id AS movie_id, "
-                    + "    m.title AS movie_title "
+            String query =
+                    "SELECT "
+                    + "  s.name AS star_name, "
+                    + "  IF(s.birthYear IS NULL, 'N/A', CAST(s.birthYear AS CHAR)) AS birth_year, "
+                    + "  m.id AS movie_id, "
+                    + "  m.title AS movie_title, "
+                    + "  m.year AS movie_year "
                     + "FROM stars s "
                     + "LEFT JOIN stars_in_movies sim ON sim.starId = s.id "
                     + "LEFT JOIN movies m ON m.id = sim.movieId "
-                    + "WHERE s.id = ?;";
+                    + "WHERE s.id = ? "
+                    + "ORDER BY m.year DESC, m.title;";
 
 
             PreparedStatement ps = conn.prepareStatement(query);
@@ -56,7 +59,7 @@ public class SingleStarServlet extends HttpServlet {
             JsonArray jsonArray = new JsonArray();
 
             while (rs.next()) {
-                String name = rs.getString("name");
+                String name = rs.getString("star_name");
                 String birthYear = rs.getString("birth_year");
                 String movieId = rs.getString("movie_id");
                 String movieTitle = rs.getString("movie_title");

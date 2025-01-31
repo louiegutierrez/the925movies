@@ -38,23 +38,28 @@ public class SingleMovieServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try (Connection conn = dataSource.getConnection()) {
-            String query = "SELECT "
-                    + "    m.id AS movie_id, "
-                    + "    m.title AS title, "
-                    + "    m.year AS year, "
-                    + "    m.director AS director, "
-                    + "    GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS all_genres, "
-                    + "    GROUP_CONCAT(DISTINCT s.id ORDER BY s.name SEPARATOR ', ') AS all_star_ids, "
-                    + "    GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS all_star_names, "
-                    + "    r.rating AS rating "
-                    + "FROM movies m "
-                    + "JOIN ratings r ON r.movieId = m.id "
-                    + "LEFT JOIN genres_in_movies gim ON gim.movieId = m.id "
-                    + "LEFT JOIN genres g ON g.id = gim.genreId "
-                    + "LEFT JOIN stars_in_movies sim ON sim.movieId = m.id "
-                    + "LEFT JOIN stars s ON s.id = sim.starId "
-                    + "WHERE m.id = ? "
-                    + "GROUP BY m.id, m.title, m.year, m.director, r.rating;";
+            String query =
+                    "SELECT m.id AS movie_id, " +
+                            "       m.title AS title, " +
+                            "       m.year AS year, " +
+                            "       m.director AS director, " +
+                            "       GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS all_genres, " +
+                            "       GROUP_CONCAT(DISTINCT s.id ORDER BY star_counts.star_count DESC, s.name ASC SEPARATOR ', ') AS all_star_ids, " +
+                            "       GROUP_CONCAT(DISTINCT s.name ORDER BY star_counts.star_count DESC, s.name ASC SEPARATOR ', ') AS all_star_names, " +
+                            "       r.rating AS rating " +
+                            "FROM movies m " +
+                            "JOIN ratings r ON r.movieId = m.id " +
+                            "LEFT JOIN genres_in_movies gim ON gim.movieId = m.id " +
+                            "LEFT JOIN genres g ON g.id = gim.genreId " +
+                            "LEFT JOIN stars_in_movies sim ON sim.movieId = m.id " +
+                            "LEFT JOIN stars s ON s.id = sim.starId " +
+                            "LEFT JOIN ( " +
+                            "    SELECT starId, COUNT(*) AS star_count " +
+                            "    FROM stars_in_movies " +
+                            "    GROUP BY starId " +
+                            ") AS star_counts ON star_counts.starId = s.id " +
+                            "WHERE m.id = ? " +
+                            "GROUP BY m.id, m.title, m.year, m.director, r.rating;";
 
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, id);
@@ -62,16 +67,15 @@ public class SingleMovieServlet extends HttpServlet {
             JsonArray jsonArray = new JsonArray();
 
             while (rs.next()) {
-                String movie_id = rs.getString(1);
-                String title = rs.getString(2);
-                String year = rs.getString(3);
-                String director = rs.getString(4);
-                String all_genres = rs.getString(5);
-                String all_star_ids = rs.getString(6);
-                String all_star_names = rs.getString(7);
-                String rating = rs.getString(8);
+                String movie_id = rs.getString("movie_id");
+                String title = rs.getString("title");
+                String year = rs.getString("year");
+                String director = rs.getString("director");
+                String all_genres = rs.getString("all_genres");
+                String all_star_ids = rs.getString("all_star_ids");
+                String all_star_names = rs.getString("all_star_names");
+                String rating = rs.getString("rating");
 
-                // Create a JsonObject based on the data we retrieve from rs
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("movie_id", movie_id);
                 jsonObject.addProperty("title", title);
