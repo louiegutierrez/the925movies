@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
     <meta name="viewport"
-          content="width=device-width, initial-scale=1. shrink-to-fit=no">
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles/movie-list.css">
-    <link rel="stylesheet" href="styles/nav-bar.css">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap"
+          rel="stylesheet"/>
+
+    <link rel="stylesheet" href="styles/nav-bar.css"/>
+    <link rel="stylesheet" href="styles/movie-list.css"/>
 
     <title>Movie List</title>
 </head>
@@ -23,37 +27,68 @@
             <li><a href="cart.html">Cart</a></li>
         </ul>
         <form id="searchForm" action="movie-list.html" method="GET">
-            <input type="text" name="title" placeholder="Title">
-            <input type="number" name="year" placeholder="Year">
-            <input type="text" name="director" placeholder="Director">
-            <input type="text" name="star" placeholder="Star's Name">
+            <input type="text" name="title" placeholder="Title"/>
+            <input type="number" name="year" placeholder="Year"/>
+            <input type="text" name="director" placeholder="Director"/>
+            <input type="text" name="star" placeholder="Star's Name"/>
             <button type="submit">Search</button>
         </form>
     </nav>
 </header>
 
-<h1 id="title"> Movies List </h1>
+<div class="container">
+    <h1 id="title">Movies List</h1>
 
-<table id=movie_table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Title</th>
-        <th>Year</th>
-        <th>Directed By</th>
-        <th>Genres</th>
-        <th>Stars</th>
-        <th>Rating</th>
-    </tr>
-    </thead>
-    <tbody id=movie_table_body></tbody>
-</table>
-<div id="na"> </div>
+    <div class="mb-3">
+        <label for="pageSizeSelect">Page Size:</label>
+        <select id="pageSizeSelect">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+
+        <label for="sortSelect" class="ml-3">Sort By:</label>
+        <select id="sortSelect">
+            <option value="1">Title ASC, Rating ASC</option>
+            <option value="2">Title ASC, Rating DESC</option>
+            <option value="3">Title DESC, Rating ASC</option>
+            <option value="4">Title DESC, Rating DESC</option>
+            <option value="5">Rating ASC, Title ASC</option>
+            <option value="6">Rating ASC, Title DESC</option>
+            <option value="7">Rating DESC, Title ASC</option>
+            <option value="8">Rating DESC, Title DESC</option>
+        </select>
+
+        <button id="prevButton" class="ml-3">Prev</button>
+        <button id="nextButton">Next</button>
+    </div>
+
+    <!-- Movies Table -->
+    <table id="movie_table" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Year</th>
+            <th>Directed By</th>
+            <th>Genres</th>
+            <th>Stars</th>
+            <th>Rating</th>
+        </tr>
+        </thead>
+        <tbody id="movie_table_body"></tbody>
+    </table>
+
+    <div id="na"></div>
+</div>
+
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-<script src="movie-list.js"></script>
-<script src="search.js"></script>
 
+
+<script src="search.js"></script>
+<script src="movie-list.js"></script>
 </body>
 </html>

@@ -1,65 +1,144 @@
-function handleStarResult(resultData) {
-    console.log("handleStarResult: populating starsssss table from resultData");
-    console.log(resultData);
+// Global state for pagination
+let currentPage = 1;
+let currentSize = 10;
+let currentSort = 1;
 
-    const entries_per_page = 20;
-    const len = Math.min(resultData.length, entries_per_page);
+function buildQueryURL() {
+
+    let urlParams = new URLSearchParams(window.location.search);
+
+    urlParams.set("page", currentPage);
+    urlParams.set("size", currentSize);
+    urlParams.set("sort", currentSort);
+
+    return "api/search?" + urlParams.toString();
+}
+
+function handleStarResult(resultData) {
+    console.log("handleStarResult: populating table from resultData", resultData);
+
+    if (currentPage <= 1) {
+        jQuery("#prevButton").hide();
+    } else {
+        jQuery("#prevButton").show();
+    }
+
+    if (resultData.length < currentSize) {
+        jQuery("#nextButton").hide();
+    } else {
+        jQuery("#nextButton").show();
+    }
 
     let movieListBodyElement = jQuery("#movie_table_body");
+    // Clear any old table rows
+    movieListBodyElement.empty();
 
-    if (len === 0) {
-        console.log("n/a");
-        jQuery("#na").text("N/A, no results found");
-        jQuery("#movie_table_body").empty();
+    if (resultData.length === 0) {
+        console.log("No results found for this page.");
+        jQuery("#na").text("No results found.");
+        // Possibly hide Next button
+        jQuery("#nextButton").hide();
         return;
     }
 
-    for (let i = 0; i < len; i++) {
-        let rowHTML = "";
-        rowHTML += "<tr>";
+    jQuery("#na").text("");
 
-        rowHTML += `<th> <a href="single-movie.html?id=${resultData[i]['movie_id']}">${resultData[i]['title']}</a> </th>`;
-        rowHTML += `<th> ${resultData[i]['year']} </th>`;
-        rowHTML += `<th> ${resultData[i]['director']} </th>`;
-        rowHTML += `<th> ${resultData[i]['three_genres']} </th>`;
+    for (let i = 0; i < resultData.length; i++) {
+        let rowHTML = "<tr>";
+        rowHTML += `<td><a href="single-movie.html?id=${resultData[i]['movie_id']}">${resultData[i]['title']}</a></td>`;
+        rowHTML += `<td>${resultData[i]['year']}</td>`;
+        rowHTML += `<td>${resultData[i]['director']}</td>`;
+        rowHTML += `<td>${resultData[i]['three_genres']}</td>`;
 
-        let star_names = resultData[i]['three_stars'].split(", ");
-        let star_ids = resultData[i]['three_star_ids'].split(", ");
+        let starNames = resultData[i]['three_stars'].split(", ");
+        let starIds = resultData[i]['three_star_ids'].split(", ");
+        let starsHTML = starNames.map((name, j) =>
+            `<a href="single-star.html?id=${starIds[j]}">${name}</a>`
+        ).join(", ");
+        rowHTML += `<td>${starsHTML}</td>`;
 
-        let star_string =
-            "<th>" +
-                star_names.map((name, j) =>
-                    `<a href="single-star.html?id=${star_ids[j]}">${name}</a>`
-                ).join(", ") +
-            "</th>";
-
-        rowHTML += star_string;
-        rowHTML += `<th> ${resultData[i]['rating']} </th>`;
-
+        rowHTML += `<td>${resultData[i]['rating']}</td>`;
         rowHTML += "</tr>";
         movieListBodyElement.append(rowHTML);
     }
 }
 
+function fetchMovieList() {
+    let url = buildQueryURL();
+    console.log("Fetching from:", url);
 
-const urlParams = new URLSearchParams(window.location.search);
-console.log(urlParams);
-if(urlParams.size === 0){
-    console.log("default");
+    let queryPart = url.split("?")[1]; // everything after the "?"
+    history.replaceState({}, "", "movie-list.html?" + queryPart);
+
     jQuery.ajax({
         dataType: "json",
         method: "GET",
-        url: "api/movielist",
-        success: (resultData) => handleStarResult(resultData)
-    });
-} else {
-    // TODO
-    console.log("url");
-    jQuery.ajax({
-        dataType: "json",
-        method: "GET",
-        url: "api/search?" + urlParams.toString(),
-        success: (resultData) => handleStarResult(resultData)
+        url: url,
+        success: (resultData) => handleStarResult(resultData),
+        error: (xhr, status, error) => {
+            console.log("Error fetching:", status, error);
+        }
     });
 }
 
+function initializePage() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // If "page" param is present, parse it
+    if (urlParams.has("page")) {
+        currentPage = parseInt(urlParams.get("page")) || 1;
+    }
+    if (currentPage < 1) currentPage = 1;
+
+    // If "size" param is present
+    if (urlParams.has("size")) {
+        let s = parseInt(urlParams.get("size"));
+        if ([10,25,50,100].includes(s)) {
+            currentSize = s;
+        }
+    }
+
+    // If "sort" param is present
+    if (urlParams.has("sort")) {
+        let so = parseInt(urlParams.get("sort"));
+        if ([1,2,3,4,5,6,7,8].includes(so)) {
+            currentSort = so;
+        }
+    }
+
+    jQuery("#pageSizeSelect").val(currentSize);
+    jQuery("#sortSelect").val(currentSort);
+
+    fetchMovieList();
+}
+
+jQuery(() => {
+    initializePage();
+
+    jQuery("#pageSizeSelect").change(function() {
+        console.log("pageSizeSelect changed! New value=", jQuery(this).val());
+        currentSize = parseInt(jQuery(this).val());
+        currentPage = 1;
+        fetchMovieList();
+    });
+
+    jQuery("#sortSelect").change(function() {
+        console.log("sortSelect changed! New value=", jQuery(this).val());
+        currentSort = parseInt(jQuery(this).val());
+        currentPage = 1;
+        fetchMovieList();
+    });
+
+    jQuery("#prevButton").click(function() {
+        console.log("prevButton changed! New value=", jQuery(this).val());
+        if (currentPage > 1) {
+            currentPage--;
+            fetchMovieList();
+        }
+    });
+    jQuery("#nextButton").click(function() {
+        console.log("nextButton changed! New value=", jQuery(this).val());
+        currentPage++;
+        fetchMovieList();
+    });
+});
