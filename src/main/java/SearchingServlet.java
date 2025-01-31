@@ -22,13 +22,16 @@ public class SearchingServlet extends HttpServlet {
 
     public void init(ServletConfig config) {
         try {
-            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
+            dataSource = (DataSource) new InitialContext()
+                    .lookup("java:comp/env/jdbc/moviedb");
         } catch (NamingException e) {
             e.printStackTrace();
         }
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
@@ -39,16 +42,50 @@ public class SearchingServlet extends HttpServlet {
         String genre = request.getParameter("genre");
         String letter = request.getParameter("letter");
 
-        // logging
-        System.out.println("title: " + title);
-        System.out.println("year: " + year);
-        System.out.println("director: " + director);
-        System.out.println("actor: " + actor);
-        System.out.println("genre: " + genre);
-        System.out.println("letter: " + letter);
+        String pageParam = request.getParameter("page");
+        String sizeParam = request.getParameter("size");
+        String sortParam = request.getParameter("sort");
 
+        // Default page & size
+        int page = 1;
+        int size = 10;
+        int sortOption = 1;
 
-        request.getServletContext().log("Getting Query");
+        try {
+            if (pageParam != null) {
+                page = Integer.parseInt(pageParam);
+            }
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+        if (page < 1) page = 1;
+
+        try {
+            if (sizeParam != null) {
+                size = Integer.parseInt(sizeParam);
+            }
+        } catch (NumberFormatException e) {
+            size = 10;
+        }
+        if (size != 10 && size != 25 && size != 50 && size != 100) {
+            size = 10;
+        }
+
+        try {
+            if (sortParam != null) {
+                sortOption = Integer.parseInt(sortParam);
+            }
+        } catch (NumberFormatException e) {
+            sortOption = 1;
+        }
+
+        // Print debug
+        System.out.println("title=" + title + ", year=" + year
+                + ", director=" + director + ", actor=" + actor
+                + ", genre=" + genre + ", letter=" + letter
+                + ", page=" + page + ", size=" + size + ", sort=" + sortOption);
+
+        // Build base query
         try (Connection conn = dataSource.getConnection()) {
             StringBuilder queryBuilder = new StringBuilder();
             queryBuilder.append("SELECT m.id AS movie_id, m.title, m.year, m.director, ");
@@ -69,7 +106,8 @@ public class SearchingServlet extends HttpServlet {
                     .append("  FROM (")
                     .append("    SELECT ")
                     .append("      s.id AS star_id, ")
-                    .append("      (SELECT COUNT(*) FROM stars_in_movies sim2 WHERE sim2.starId = s.id) AS total_appearances ")
+                    .append("      (SELECT COUNT(*) FROM stars_in_movies sim2 ")
+                    .append("       WHERE sim2.starId = s.id) AS total_appearances ")
                     .append("    FROM stars_in_movies sm ")
                     .append("    JOIN stars s ON sm.starId = s.id ")
                     .append("    WHERE sm.movieId = m.id ")
@@ -83,7 +121,8 @@ public class SearchingServlet extends HttpServlet {
                     .append("  FROM (")
                     .append("    SELECT ")
                     .append("      s.name AS star_name, ")
-                    .append("      (SELECT COUNT(*) FROM stars_in_movies sim2 WHERE sim2.starId = s.id) AS total_appearances ")
+                    .append("      (SELECT COUNT(*) FROM stars_in_movies sim2 ")
+                    .append("       WHERE sim2.starId = s.id) AS total_appearances ")
                     .append("    FROM stars_in_movies sm ")
                     .append("    JOIN stars s ON sm.starId = s.id ")
                     .append("    WHERE sm.movieId = m.id ")
@@ -108,7 +147,10 @@ public class SearchingServlet extends HttpServlet {
                 queryBuilder.append("AND m.director LIKE ? ");
             }
             if (actor != null && !actor.isEmpty()) {
-                queryBuilder.append("AND EXISTS (SELECT 1 FROM stars_in_movies sm JOIN stars s ON sm.starId = s.id WHERE sm.movieId = m.id AND s.name LIKE ?) ");
+                queryBuilder.append(
+                        "AND EXISTS (SELECT 1 FROM stars_in_movies sm "
+                                + "JOIN stars s ON sm.starId = s.id "
+                                + "WHERE sm.movieId = m.id AND s.name LIKE ?) ");
             }
             if (genre != null && !genre.isEmpty()) {
                 queryBuilder.append(
@@ -129,12 +171,44 @@ public class SearchingServlet extends HttpServlet {
                 }
             }
 
-            String query = queryBuilder.toString();
-            request.getServletContext().log("Query: " + query);
+            switch (sortOption) {
+                case 1:
+                    queryBuilder.append("ORDER BY m.title ASC, rating ASC ");
+                    break;
+                case 2:
+                    queryBuilder.append("ORDER BY m.title ASC, rating DESC ");
+                    break;
+                case 3:
+                    queryBuilder.append("ORDER BY m.title DESC, rating ASC ");
+                    break;
+                case 4:
+                    queryBuilder.append("ORDER BY m.title DESC, rating DESC ");
+                    break;
+                case 5:
+                    queryBuilder.append("ORDER BY rating ASC, m.title ASC ");
+                    break;
+                case 6:
+                    queryBuilder.append("ORDER BY rating ASC, m.title DESC ");
+                    break;
+                case 7:
+                    queryBuilder.append("ORDER BY rating DESC, m.title ASC ");
+                    break;
+                case 8:
+                    queryBuilder.append("ORDER BY rating DESC, m.title DESC ");
+                    break;
+                default:
+                    queryBuilder.append("ORDER BY m.title ASC, rating ASC ");
+                    break;
+            }
 
+            queryBuilder.append("LIMIT ? OFFSET ? ");
+
+            String query = queryBuilder.toString();
             PreparedStatement statement = conn.prepareStatement(query);
+
             int paramIndex = 1;
 
+            // Bind all the search params in order
             if (title != null && !title.isEmpty()) {
                 statement.setString(paramIndex++, "%" + title + "%");
             }
@@ -142,7 +216,7 @@ public class SearchingServlet extends HttpServlet {
                 statement.setInt(paramIndex++, Integer.parseInt(year));
             }
             if (director != null && !director.isEmpty()) {
-                statement.setString(paramIndex++, "%"+ director + "%");
+                statement.setString(paramIndex++, "%" + director + "%");
             }
             if (actor != null && !actor.isEmpty()) {
                 statement.setString(paramIndex++, "%" + actor + "%");
@@ -153,6 +227,10 @@ public class SearchingServlet extends HttpServlet {
             if (letter != null && !letter.isEmpty() && !letter.equals("*")) {
                 statement.setString(paramIndex++, letter + "%");
             }
+
+            int offset = (page - 1) * size;
+            statement.setInt(paramIndex++, size);   // LIMIT ?
+            statement.setInt(paramIndex++, offset); // OFFSET ?
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -165,23 +243,27 @@ public class SearchingServlet extends HttpServlet {
                 jsonObject.addProperty("director", resultSet.getString("director"));
                 jsonObject.addProperty("three_genres", resultSet.getString("genres"));
                 jsonObject.addProperty("three_stars", resultSet.getString("stars"));
-                jsonObject.addProperty("three_star_ids", resultSet.getString("star_ids"));
+                jsonObject.addProperty("three_star_ids",
+                        resultSet.getString("star_ids") == null ?
+                                "" : resultSet.getString("star_ids"));
                 jsonObject.addProperty("rating", resultSet.getFloat("rating"));
                 jsonArray.add(jsonObject);
             }
 
+            resultSet.close();
+            statement.close();
+
             out.write(jsonArray.toString());
             response.setStatus(200);
+
         } catch (Exception e) {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("errorMessage", e.getMessage());
             out.write(jsonObject.toString());
-
             request.getServletContext().log("Error:", e);
             response.setStatus(500);
         } finally {
             out.close();
         }
-
     }
 }
