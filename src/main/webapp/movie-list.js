@@ -53,6 +53,7 @@ if(urlParams.size === 0){
         success: (resultData) => handleStarResult(resultData)
     });
 } else {
+    // TODO
     console.log("url");
     jQuery.ajax({
         dataType: "json",
