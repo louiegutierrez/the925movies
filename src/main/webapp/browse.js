@@ -11,6 +11,7 @@ function populate_letters() {
     let buttons = letters.map(function (letter) {
         return $("<button>")
             .text(letter)
+            .addClass("btn btn-primary m-2") // Add Bootstrap classes
             .on("click", function () {
                 // Redirect to movie-list.html, with ?letter=...
                 window.location.href = "movie-list.html?letter=" + letter;
@@ -25,6 +26,7 @@ function populate_genres(resultData) {
     let buttons = resultData.map(function (genre) {
         return $("<button>")
             .text(genre["name"])
+            .addClass("btn btn-success m-2") // Add Bootstrap classes
             .on("click", function () {
                 // Redirect to movie-list.html, with ?genre=...
                 window.location.href = "movie-list.html?genre=" + genre["name"];

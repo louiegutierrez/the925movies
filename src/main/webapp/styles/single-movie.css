@@ -1,22 +1,12 @@
+
 #title{
     margin: 20px;
     text-align: left;
 }
-
 body {
     font-family: Poppins, sans-serif;
     background-color: #f4f4f4;
-    margin: 20px;
-    padding: 0;
     text-align: left;
-}
-
-a {
-    margin-bottom: 20px;
-    font-size: 18px;
-    text-decoration: none;
-    color: #007bff;
-    font-weight: bold;
 }
 
 a:hover {
@@ -26,13 +16,14 @@ a:hover {
 h1 {
     font-size: 32px;
     color: #333;
-    margin-bottom: 10px;
+    padding: 10px 10px 0;
 }
 
 h2 {
     font-size: 24px;
     color: #555;
     margin-bottom: 8px;
+    padding-left: 10px;
 }
 
 #single_movie_table {
@@ -40,6 +31,7 @@ h2 {
     margin: 20px auto;
     border-collapse: collapse;
     background: #f9f9f9;
+    padding: 10px;
 }
 
 #single_movie_table thead {
