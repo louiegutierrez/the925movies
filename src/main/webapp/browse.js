@@ -6,31 +6,31 @@ function handleGenreResult(resultData){
     populate_genres(resultData);
 }
 
-function populate_genres(resultData){
+function populate_letters() {
+    let lettersElement = jQuery("#letters");
+    let buttons = letters.map(function (letter) {
+        return $("<button>")
+            .text(letter)
+            .on("click", function () {
+                // Redirect to movie-list.html, with ?letter=...
+                window.location.href = "movie-list.html?letter=" + letter;
+            });
+    });
+    lettersElement.append(buttons);
+}
+
+function populate_genres(resultData) {
     console.log(resultData);
     let genresElement = jQuery("#genres");
     let buttons = resultData.map(function (genre) {
         return $("<button>")
             .text(genre["name"])
             .on("click", function () {
-                window.location.href = "movie-list.html?" + "browse/" + genre["name"];
-                // console.log("Button clicked:", letter.name);
+                // Redirect to movie-list.html, with ?genre=...
+                window.location.href = "movie-list.html?genre=" + genre["name"];
             });
     });
     genresElement.append(buttons);
-}
-
-function populate_letters(){
-    let lettersElement = jQuery("#letters");
-    let buttons = letters.map(function (letter) {
-        return $("<button>")
-            .text(letter)
-            .on("click", function () {
-                window.location.href = "movie-list.html?" + "browse/" + letter;
-                console.log("Button clicked:", letter);
-            });
-    });
-    lettersElement.append(buttons);
 }
 
 jQuery.ajax({
