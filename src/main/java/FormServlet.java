@@ -1,5 +1,4 @@
 import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -9,6 +8,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,25 +36,33 @@ public class FormServlet extends HttpServlet {
         String username = request.getParameter("email");
         String password = request.getParameter("password");
 
-
-        // confirm from database if it contains this username and password
         JsonObject responseJsonObject = new JsonObject();
-        try (Connection conn = dataSource.getConnection()){
+
+        try (Connection conn = dataSource.getConnection()) {
             String query = "SELECT * FROM customers WHERE email = ? AND password = ?";
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, username);
             ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
+
             if (rs.next()) {
-                request.getSession().setAttribute("username", new User(username));
+                // Set session attribute
+                HttpSession session = request.getSession();
+                session.setAttribute("user", username);
+
+                // Return success response
                 responseJsonObject.addProperty("status", "success");
                 responseJsonObject.addProperty("message", "success");
             } else {
-                responseJsonObject.addProperty("status", "error");
-                responseJsonObject.addProperty("message", "Incorrect password or username provided.");
+                // Return error response
+                responseJsonObject.addProperty("status", "fail");
+                responseJsonObject.addProperty("message", "Incorrect email or password.");
             }
-            response.getWriter().write(responseJsonObject.toString());
+
+            // Write JSON response
+            out.write(responseJsonObject.toString());
         } catch (Exception e) {
+            // Handle database errors
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("errorMessage", e.getMessage());
             out.write(jsonObject.toString());
@@ -63,7 +72,5 @@ public class FormServlet extends HttpServlet {
         } finally {
             out.close();
         }
-
-
     }
 }

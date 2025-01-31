@@ -1,7 +1,6 @@
 function handleLoginResult(resultData) {
     console.log("handle login response");
     console.log(resultData);
-    console.log(resultData["status"]);
 
     // If login succeeds, redirect the user to index.html
     if (resultData["status"] === "success") {
@@ -28,7 +27,11 @@ function submitLoginForm(formSubmitEvent) {
         url: "api/login",
         method: "POST",
         data: $("#login_form_element").serialize(),
-        success: handleLoginResult
+        success: handleLoginResult,
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Login request failed:", textStatus, errorThrown);
+            $("#login_error_message").text("Login failed. Please try again.");
+        }
     });
 }
 
