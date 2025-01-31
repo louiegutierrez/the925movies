@@ -28,7 +28,7 @@ function handleStarResult(resultData) {
     } else {
         jQuery("#nextButton").show();
     }
-
+    jQuery("#numEntries").text(`Showing Results ${(currentPage - 1) * currentSize + 1} - ${currentPage * currentSize}`);
     let movieListBodyElement = jQuery("#movie_table_body");
     // Clear any old table rows
     movieListBodyElement.empty();
