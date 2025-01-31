@@ -36,6 +36,17 @@ public class SearchingServlet extends HttpServlet {
         String year = request.getParameter("year");
         String director = request.getParameter("director");
         String actor = request.getParameter("star");
+        String genre = request.getParameter("genre");
+        String letter = request.getParameter("letter");
+
+        // logging
+        System.out.println("title: " + title);
+        System.out.println("year: " + year);
+        System.out.println("director: " + director);
+        System.out.println("actor: " + actor);
+        System.out.println("genre: " + genre);
+        System.out.println("letter: " + letter);
+
 
         request.getServletContext().log("Getting Query");
         try (Connection conn = dataSource.getConnection()) {
@@ -99,6 +110,24 @@ public class SearchingServlet extends HttpServlet {
             if (actor != null && !actor.isEmpty()) {
                 queryBuilder.append("AND EXISTS (SELECT 1 FROM stars_in_movies sm JOIN stars s ON sm.starId = s.id WHERE sm.movieId = m.id AND s.name LIKE ?) ");
             }
+            if (genre != null && !genre.isEmpty()) {
+                queryBuilder.append(
+                        "AND EXISTS ("
+                                + "  SELECT 1 "
+                                + "  FROM genres_in_movies gim "
+                                + "  JOIN genres g ON gim.genreId = g.id "
+                                + "  WHERE gim.movieId = m.id "
+                                + "    AND g.name LIKE ?"
+                                + ") "
+                );
+            }
+            if (letter != null && !letter.isEmpty()) {
+                if (letter.equals("*")) {
+                    queryBuilder.append("AND m.title REGEXP '^[^a-zA-Z0-9]' ");
+                } else {
+                    queryBuilder.append("AND m.title LIKE ? ");
+                }
+            }
 
             String query = queryBuilder.toString();
             request.getServletContext().log("Query: " + query);
@@ -113,10 +142,16 @@ public class SearchingServlet extends HttpServlet {
                 statement.setInt(paramIndex++, Integer.parseInt(year));
             }
             if (director != null && !director.isEmpty()) {
-                statement.setString(paramIndex++, director + "%");
+                statement.setString(paramIndex++, "%"+ director + "%");
             }
             if (actor != null && !actor.isEmpty()) {
-                statement.setString(paramIndex++, actor + "%");
+                statement.setString(paramIndex++, "%" + actor + "%");
+            }
+            if (genre != null && !genre.isEmpty()) {
+                statement.setString(paramIndex++, "%" + genre + "%");
+            }
+            if (letter != null && !letter.isEmpty() && !letter.equals("*")) {
+                statement.setString(paramIndex++, letter + "%");
             }
 
             ResultSet resultSet = statement.executeQuery();
