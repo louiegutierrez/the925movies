@@ -59,7 +59,10 @@ function handleStarResult(resultData) {
 
         rowHTML += `<td>${resultData[i]['rating']}</td>`;
 
-        rowHTML += `<td> <button> Add to Cart </button>  </td>`;
+        rowHTML += `<td> <button class="addToCart" 
+                                 data-movie-id="${resultData[i]['movie_id']}"> 
+                                 Add to Cart 
+                                 </button>  </td>`;
 
         rowHTML += "</tr>";
         movieListBodyElement.append(rowHTML);
