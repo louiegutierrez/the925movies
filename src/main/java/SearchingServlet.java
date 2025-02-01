@@ -48,8 +48,8 @@ public class SearchingServlet extends HttpServlet {
 
         // Default page & size
         int page = 1;
-        int size = 10;
-        int sortOption = 1;
+        int size = 25;
+        int sortOption = 7;
 
         try {
             if (pageParam != null) {
