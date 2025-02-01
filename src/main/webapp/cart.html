@@ -36,7 +36,18 @@
 <div id="cart" >
     <h2 id="sessionID"> </h2>
     <h2 id="lastAccessTime"> </h2>
-    <div id="item_list"> </div>
+    <table id="cart-movies" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Add/Remove</th>
+        </tr>
+        </thead>
+        <tbody id="movie_table_body"></tbody>
+    </table>
 </div>
 
 <a id="back" href="movie-list.html">Back to List</a>

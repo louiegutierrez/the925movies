@@ -1,19 +1,35 @@
-// let cart = $("#cart");
+let cartMovies = $("#cart-movies");
 //
-// function handleSessionData(resultDataString) {
-//     let resultDataJson = JSON.parse(resultDataString);
-//
-//     console.log("handle session response");
-//     console.log(resultDataJson);
-//     console.log(resultDataJson["sessionID"]);
-//
-//     // show the session information
-//     $("#sessionID").text("Session ID: " + resultDataJson["sessionID"]);
-//     $("#lastAccessTime").text("Last access time: " + resultDataJson["lastAccessTime"]);
-//
-//     // show cart information
-//     handleCartArray(resultDataJson["previousMovies"]);
-// }
+function handleSessionData(resultDataString) {
+    let resultDataJson = JSON.parse(resultDataString);
+
+    console.log("handle session response");
+    console.log(resultDataJson);
+    console.log(resultDataJson["sessionID"]);
+
+    // show the session information
+    $("#sessionID").text("Session ID: " + resultDataJson["sessionID"]);
+    $("#lastAccessTime").text("Last access time: " + resultDataJson["lastAccessTime"]);
+
+
+    let previousMovies = resultDataJson["previousMovies"];
+    console.log(previousMovies);
+
+    Object.keys(previousMovies).forEach(movieId => {
+        let quantity = previousMovies[movieId];
+        let rowHTML = `<tr>
+            <td>${movieId}</td>
+            <td>${quantity}</td>
+            <td>$price</td>
+            <td>$total</td>
+            <td>
+                <button class="addButton">Add</button>
+                <button class="removeButton">Remove</button>
+            </td>
+        </tr>`;
+        cartMovies.append(rowHTML);
+    });
+}
 //
 // function handleCartArray(resultArray) {
 //     console.log(resultArray);
@@ -45,14 +61,14 @@
 //     cart[0].reset();
 // }
 //
-// $.ajax("api/cart", {
-//     method: "GET",
-//     success: handleSessionData
-// });
-//
-// cart.submit(handleCartInfo);
 
-
+$.ajax("api/cart", {
+    method: "GET",
+    success: handleSessionData,
+    error: () => {
+        console.log("Failure");
+    }
+});
 
 $(document).on("click", ".addToCart", function () {
     let movieId = $(this).data("movie-id");
@@ -65,7 +81,7 @@ $(document).on("click", ".addToCart", function () {
         },
         success: function (response) {
             console.log("Movie added to cart:", response);
-            alert("Movie added to cart:" + response);
+            alert("Movie added to cart");
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("Error adding movie to cart:", textStatus, errorThrown);
