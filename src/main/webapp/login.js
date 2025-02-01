@@ -2,13 +2,16 @@ function handleLoginResult(resultData) {
     console.log("handle login response");
     console.log(resultData);
 
-    // If login succeeds, redirect the user to index.html
+    // If login succeeds, redirect the user to browse.html
     if (resultData["status"] === "success") {
-        window.location.replace("index.html");
+        window.location.replace("browse.html");
+        alert("Logged in Successfully");
+
     } else {
         // If login fails, display the error message
         console.log("show error message");
         console.log(resultData["message"]);
+        alert(resultData["message"]);
         $("#login_error_message").text(resultData["message"]);
     }
 }

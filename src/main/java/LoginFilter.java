@@ -8,7 +8,6 @@ import java.io.IOException;
 
 @WebFilter("/*") // Apply this filter to all URLs
 public class LoginFilter implements Filter {
-
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -19,7 +18,6 @@ public class LoginFilter implements Filter {
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
 
-        // Allow access to static resources (CSS, JS, images, etc.)
         if (requestURI.startsWith(contextPath + "/static/") ||
                 requestURI.endsWith(".css") ||
                 requestURI.endsWith(".js") ||
@@ -29,7 +27,6 @@ public class LoginFilter implements Filter {
             return;
         }
 
-        // Allow access to the login page, login request, and API endpoints
         String loginURI = contextPath + "/login.html";
         boolean isLoginRequest = requestURI.equals(loginURI);
         boolean isLoginPage = requestURI.endsWith("login.html");
@@ -40,25 +37,24 @@ public class LoginFilter implements Filter {
             return;
         }
 
-        // Check if the user is logged in
         boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
 
         if (isLoggedIn) {
-            // User is logged in, allow the request to proceed
+            httpResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
+            httpResponse.setHeader("Pragma", "no-cache"); // HTTP 1.0
+            httpResponse.setHeader("Expires", "0"); // Proxies
+
             chain.doFilter(request, response);
         } else {
-            // User is not logged in, redirect to the login page
             httpResponse.sendRedirect(loginURI);
         }
     }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        // Initialization logic (if needed)
     }
 
     @Override
     public void destroy() {
-        // Cleanup logic (if needed)
     }
 }
