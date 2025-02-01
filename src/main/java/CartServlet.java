@@ -37,33 +37,19 @@ public class CartServlet extends HttpServlet {
         String sessionId = session.getId();
         long lastAccessTime = session.getLastAccessedTime();
 
-        JsonObject responseJsonObject = new JsonObject();
-        responseJsonObject.addProperty("sessionID", sessionId);
-        responseJsonObject.addProperty("lastAccessTime", new Date(lastAccessTime).toString());
-
         Map<String, Integer> quantities = (Map<String, Integer>) session.getAttribute("quantities");
         if (quantities == null) {
             quantities = new HashMap<>();
         }
 
         System.out.println("getting " + quantities.size() + " movies");
+        session.setAttribute("quantities", quantities);
 
         PriceResult priceResult = calculateTotalPrice(quantities);
-        double total = priceResult.getTotalPrice();
-        Map<String, Double> pricesMap = priceResult.getPricesMap();
+        JsonObject responseJsonObject = getJsonObject(priceResult, quantities);
 
-        JsonObject moviesJsonObject = new JsonObject();
-        for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
-            moviesJsonObject.addProperty(entry.getKey(), entry.getValue());
-        }
-        responseJsonObject.add("quantities", moviesJsonObject);
-
-        JsonObject pricesJsonObject = new JsonObject();
-        for (Map.Entry<String, Double> entry : pricesMap.entrySet()) {
-            pricesJsonObject.addProperty(entry.getKey(), entry.getValue());
-        }
-        responseJsonObject.add("prices", pricesJsonObject);
-        responseJsonObject.addProperty("total", total);
+        responseJsonObject.addProperty("sessionID", sessionId);
+        responseJsonObject.addProperty("lastAccessTime", lastAccessTime);
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
@@ -101,6 +87,7 @@ public class CartServlet extends HttpServlet {
     private static JsonObject getJsonObject(PriceResult priceResult, Map<String, Integer> quantities) {
         double total = priceResult.getTotalPrice();
         Map<String, Double> pricesMap = priceResult.getPricesMap();
+        Map<String, String> namesMap = priceResult.getNamesMap();
 
         JsonObject responseJsonObject = new JsonObject();
         JsonObject moviesJsonObject = new JsonObject();
@@ -114,6 +101,13 @@ public class CartServlet extends HttpServlet {
             pricesJsonObject.addProperty(entry.getKey(), entry.getValue());
         }
         responseJsonObject.add("prices", pricesJsonObject);
+
+        JsonObject namesJsonObject = new JsonObject();
+        for (Map.Entry<String, String> entry : namesMap.entrySet()) {
+            namesJsonObject.addProperty(entry.getKey(), entry.getValue());
+        }
+        responseJsonObject.add("names", namesJsonObject);
+
         responseJsonObject.addProperty("total", total);
         return responseJsonObject;
     }
@@ -121,14 +115,15 @@ public class CartServlet extends HttpServlet {
     private PriceResult calculateTotalPrice(Map<String, Integer> cart) {
         double total = 0.0;
         Map<String, Double> pricesMap = new HashMap<>();
+        Map<String, String> namesMap = new HashMap<>();
 
         if (cart.isEmpty()) {
-            return new PriceResult(total, pricesMap);
+            return new PriceResult(total, pricesMap, namesMap);
         }
 
         try (Connection conn = dataSource.getConnection()) {
             // Build a query to fetch prices for all movies in the cart
-            StringBuilder queryBuilder = new StringBuilder("SELECT id, price FROM movies WHERE id IN (");
+            StringBuilder queryBuilder = new StringBuilder("SELECT id, price, title FROM movies WHERE id IN (");
             for (int i = 0; i < cart.size(); i++) {
                 queryBuilder.append("?");
                 if (i < cart.size() - 1) {
@@ -147,23 +142,27 @@ public class CartServlet extends HttpServlet {
             while (resultSet.next()) {
                 String movieId = resultSet.getString("id");
                 double price = resultSet.getDouble("price");
+                String title = resultSet.getString("title");
                 int quantity = cart.get(movieId);
                 total += price * quantity;
-                pricesMap.put(movieId, price); // Store price in the HashMap
+                pricesMap.put(movieId, price);
+                namesMap.put(movieId, title);
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to calculate total price", e);
         }
-        return new PriceResult(total, pricesMap);
+        return new PriceResult(total, pricesMap, namesMap);
     }
 
     private static class PriceResult {
         private final double totalPrice;
         private final Map<String, Double> pricesMap;
+        private final Map<String, String> namesMap;
 
-        public PriceResult(double totalPrice, Map<String, Double> pricesMap) {
+        public PriceResult(double totalPrice, Map<String, Double> pricesMap, Map<String, String> namesMap) {
             this.totalPrice = totalPrice;
             this.pricesMap = pricesMap;
+            this.namesMap = namesMap;
         }
 
         public double getTotalPrice() {
@@ -172,6 +171,10 @@ public class CartServlet extends HttpServlet {
 
         public Map<String, Double> getPricesMap() {
             return pricesMap;
+        }
+
+        public Map<String, String> getNamesMap() {
+            return namesMap;
         }
     }
 }
