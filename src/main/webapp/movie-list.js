@@ -1,7 +1,7 @@
 // Global state for pagination
 let currentPage = 1;
-let currentSize = 10;
-let currentSort = 1;
+let currentSize = 25;
+let currentSort = 7;
 
 function buildQueryURL() {
 
