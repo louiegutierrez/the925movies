@@ -1,35 +1,27 @@
 let cartMovies = $("#cart-movies");
 //
-function handleSessionData(resultDataString) {
-    console.log(resultDataString);
-    // let resultDataJson = JSON.parse(resultDataString);
-    // let resultDataJson = resultDataString;
-
-
+function handleSessionData(resultDataJson) {
     console.log("handle session response");
     console.log(resultDataJson);
-    console.log(resultDataJson["sessionID"]);
 
-    // show the session information
     $("#sessionID").text("Session ID: " + resultDataJson["sessionID"]);
     $("#lastAccessTime").text("Last access time: " + resultDataJson["lastAccessTime"]);
 
 
-    let previousMovies = resultDataJson["previousMovies"];
-    console.log(previousMovies);
+    Object.keys(resultDataJson.quantities).forEach(movieId => {
+        let quantity = resultDataJson.quantities[movieId];
+        let price = resultDataJson.prices[movieId];
 
-    Object.keys(previousMovies).forEach(movieId => {
-        let quantity = previousMovies[movieId];
         let rowHTML = `<tr>
             <td>${movieId}</td>
             <td>${quantity}</td>
-            <td>$price</td>
-            <td>$total</td>
+            <td>$${price.toFixed(2) * quantity}</td>
             <td>
-                <button class="addButton">Add</button>
-                <button class="removeButton">Remove</button>
+                <button class="addButton" data-movie-id="${movieId}">Add</button>
+                <button class="removeButton" data-movie-id="${movieId}">Remove</button>
             </td>
         </tr>`;
+        $("#cartTotal").text("Total: $" + resultDataJson["total"].toFixed(2));
         cartMovies.append(rowHTML);
     });
 }
@@ -72,6 +64,7 @@ $.ajax("api/cart", {
         console.log("Failure");
     }
 });
+
 
 $(document).on("click", ".addToCart", function () {
     let movieId = $(this).data("movie-id");
