@@ -1,7 +1,10 @@
 let cartMovies = $("#cart-movies");
 //
 function handleSessionData(resultDataString) {
-    let resultDataJson = JSON.parse(resultDataString);
+    console.log(resultDataString);
+    // let resultDataJson = JSON.parse(resultDataString);
+    // let resultDataJson = resultDataString;
+
 
     console.log("handle session response");
     console.log(resultDataJson);

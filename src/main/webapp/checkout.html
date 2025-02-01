@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/nav-bar.css">
+
+    <title>Checkout</title>
+</head>
+<body>
+
+<h1> Checkout Here! </h1>
+<div>
+    <form>
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" required><br><br>
+
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" required><br><br>
+
+        <label for="card_number">Credit Card Number:</label>
+        <input type="text" id="card_number" name="card_number" pattern="\d{13,19}" required><br><br>
+
+        <label for="expiration_date">Expiration Date (MM/YY):</label>
+        <input type="text" id="expiration_date" name="expiration_date" pattern="(0[1-9]|1[0-2])\/\d{2}" required><br><br>
+
+        <button type="submit">Place Order</button>
+    </form>
+</div>
+
+<a id="back" href="movie-list.html">Back to List</a>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="single-movie.js"></script>
+<script src="search.js"></script>
+<script src="logout.js"></script>
+<script src="cart.js"></script>
+</body>
+</html>
