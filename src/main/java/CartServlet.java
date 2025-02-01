@@ -1,18 +1,39 @@
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 @WebServlet(name = "CartServlet", urlPatterns = "/api/cart")
 public class CartServlet extends HttpServlet {
+    private DataSource dataSource;
+
+    public void init(ServletConfig config) {
+        try {
+            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
+            System.out.println("Got cart datasource");
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+    }
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
         String sessionId = session.getId();
@@ -36,8 +57,29 @@ public class CartServlet extends HttpServlet {
 
         responseJsonObject.add("previousMovies", moviesJsonObject);
 
-        // write all the data into the jsonObject
-        response.getWriter().write(responseJsonObject.toString());
+        // query
+        System.out.println("getting movie price");
+        response.setContentType("application/json");
+        PrintWriter out = response.getWriter();
+        try (Connection conn = dataSource.getConnection()) {
+            String query = "SELECT price FROM movies WHERE id = ?";
+            JsonArray pricesJsonArray = new JsonArray();
+
+            for (Map.Entry<String, Integer> entry : previousMovies.entrySet()) {
+                PreparedStatement preparedStatement = conn.prepareStatement(query);
+                preparedStatement.setString(1, entry.getKey());
+                ResultSet resultSet = preparedStatement.executeQuery();
+                resultSet.next();
+                pricesJsonArray.add(resultSet.getDouble("price"));
+            }
+            responseJsonObject.add("prices", pricesJsonArray);
+            out.write(responseJsonObject.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            out.close();
+        }
+
     }
 
     /**
@@ -45,6 +87,7 @@ public class CartServlet extends HttpServlet {
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String item = request.getParameter("movieId");
+        Integer quantity = Integer.parseInt(request.getParameter("quantity") == null ? "1" : request.getParameter("quantity"));
         System.out.println(item);
         HttpSession session = request.getSession();
 
@@ -54,7 +97,7 @@ public class CartServlet extends HttpServlet {
         }
 
         synchronized (previousMovies) { // Ensure thread safety
-            previousMovies.put(item, previousMovies.getOrDefault(item, 0) + 1);
+            previousMovies.put(item, previousMovies.get(item) + quantity);
         }
 
         session.setAttribute("previousMovies", previousMovies);
