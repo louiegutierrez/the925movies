@@ -72,7 +72,7 @@ public class CartServlet extends HttpServlet {
             quantities.put(item, quantities.getOrDefault(item, 0) + quantity);
         }
 
-        if (quantities.get(item) == 0) {
+        if (quantities.get(item) <= 0) {
             quantities.remove(item);
         }
         session.setAttribute("quantities", quantities);
