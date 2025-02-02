@@ -9,12 +9,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Arrays;
 
 @WebServlet(name = "SearchingServlet", urlPatterns = "/api/search")
 public class SearchingServlet extends HttpServlet {
@@ -29,55 +32,70 @@ public class SearchingServlet extends HttpServlet {
         }
     }
 
+    private String handleSessionParam(HttpServletRequest request, HttpSession session, String paramName) {
+        String value = request.getParameter(paramName);
+        if (value != null && !value.trim().isEmpty()) {
+            session.setAttribute(paramName, value);
+        } else {
+            Object sessionVal = session.getAttribute(paramName);
+            value = (sessionVal == null) ? null : sessionVal.toString();
+        }
+        return value;
+    }
+
+    private int handleSessionIntParam(HttpServletRequest request, HttpSession session, String paramName, int defaultValue) {
+        String paramStr = request.getParameter(paramName);
+        if (paramStr != null && !paramStr.trim().isEmpty()) {
+            try {
+                int val = Integer.parseInt(paramStr);
+                System.out.println("setting attribute " + paramName + " in functioin as " + val);
+                session.setAttribute(paramName, val);
+                return val;
+            } catch (NumberFormatException e) {
+                Object sessVal = session.getAttribute(paramName);
+                if (sessVal == null) {
+                    return defaultValue;
+                }
+                return (int) sessVal;
+            }
+        } else {
+            Object sessVal = session.getAttribute(paramName);
+            if (sessVal == null) {
+                return defaultValue;
+            }
+            return (int) sessVal;
+        }
+    }
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        HttpSession session = request.getSession();
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        String title = request.getParameter("title");
-        String year = request.getParameter("year");
-        String director = request.getParameter("director");
-        String actor = request.getParameter("star");
-        String genre = request.getParameter("genre");
-        String letter = request.getParameter("letter");
+        String title = handleSessionParam(request, session, "title");
+        String year = handleSessionParam(request, session, "year");
+        String director = handleSessionParam(request, session, "director");
+        String actor = handleSessionParam(request, session, "star");
+        String genre = handleSessionParam(request, session, "genre");
+        String letter = handleSessionParam(request, session, "letter");
 
-        String pageParam = request.getParameter("page");
-        String sizeParam = request.getParameter("size");
-        String sortParam = request.getParameter("sort");
-
-        // Default page & size
-        int page = 1;
-        int size = 25;
-        int sortOption = 7;
-
-        try {
-            if (pageParam != null) {
-                page = Integer.parseInt(pageParam);
-            }
-        } catch (NumberFormatException e) {
+        int page = handleSessionIntParam(request, session, "page", 1);
+        int size = handleSessionIntParam(request, session, "size", 25);
+        int sortOption = handleSessionIntParam(request, session, "sort", 7);
+        if (page < 1) {
             page = 1;
+            session.setAttribute("page", page);
         }
-        if (page < 1) page = 1;
-
-        try {
-            if (sizeParam != null) {
-                size = Integer.parseInt(sizeParam);
-            }
-        } catch (NumberFormatException e) {
-            size = 10;
+        if (!Arrays.asList(10, 25, 50, 100).contains(size)) {
+            size = 25;
+            session.setAttribute("size", size);
         }
-        if (size != 10 && size != 25 && size != 50 && size != 100) {
-            size = 10;
+        if (sortOption < 1 || sortOption > 8) {
+            sortOption = 7;
+            session.setAttribute("sort", sortOption);
         }
 
-        try {
-            if (sortParam != null) {
-                sortOption = Integer.parseInt(sortParam);
-            }
-        } catch (NumberFormatException e) {
-            sortOption = 1;
-        }
 
         // Print debug
         System.out.println("title=" + title + ", year=" + year
@@ -232,28 +250,32 @@ public class SearchingServlet extends HttpServlet {
             statement.setInt(paramIndex++, size);   // LIMIT ?
             statement.setInt(paramIndex++, offset); // OFFSET ?
 
-            ResultSet resultSet = statement.executeQuery();
+            ResultSet rs = statement.executeQuery();
 
-            JsonArray jsonArray = new JsonArray();
-            while (resultSet.next()) {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("movie_id", resultSet.getString("movie_id"));
-                jsonObject.addProperty("title", resultSet.getString("title"));
-                jsonObject.addProperty("year", resultSet.getInt("year"));
-                jsonObject.addProperty("director", resultSet.getString("director"));
-                jsonObject.addProperty("three_genres", resultSet.getString("genres"));
-                jsonObject.addProperty("three_stars", resultSet.getString("stars"));
-                jsonObject.addProperty("three_star_ids",
-                        resultSet.getString("star_ids") == null ?
-                                "" : resultSet.getString("star_ids"));
-                jsonObject.addProperty("rating", resultSet.getFloat("rating"));
-                jsonArray.add(jsonObject);
+            JsonObject responseJson = new JsonObject();
+            responseJson.addProperty("page", page);
+            responseJson.addProperty("size", size);
+            responseJson.addProperty("sort", sortOption);
+
+            JsonArray moviesArray = new JsonArray();
+
+            while (rs.next()) {
+                JsonObject movieJson = new JsonObject();
+                movieJson.addProperty("movie_id", rs.getString("movie_id"));
+                movieJson.addProperty("title", rs.getString("title"));
+                movieJson.addProperty("year", rs.getInt("year"));
+                movieJson.addProperty("director", rs.getString("director"));
+                movieJson.addProperty("three_genres", rs.getString("genres"));
+                movieJson.addProperty("three_stars", rs.getString("stars"));
+                movieJson.addProperty("three_star_ids",
+                        rs.getString("star_ids") == null ? "" : rs.getString("star_ids"));
+                movieJson.addProperty("rating", rs.getFloat("rating"));
+                moviesArray.add(movieJson);
             }
 
-            resultSet.close();
-            statement.close();
+            responseJson.add("movies", moviesArray);
 
-            out.write(jsonArray.toString());
+            out.write(responseJson.toString());
             response.setStatus(200);
 
         } catch (Exception e) {

@@ -15,7 +15,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +41,6 @@ public class CartServlet extends HttpServlet {
             quantities = new HashMap<>();
         }
 
-        System.out.println("getting " + quantities.size() + " movies");
         session.setAttribute("quantities", quantities);
 
         PriceResult priceResult = calculateTotalPrice(quantities);
@@ -123,7 +121,6 @@ public class CartServlet extends HttpServlet {
         if (cart.isEmpty()) {
             return new PriceResult(total, pricesMap, namesMap);
         }
-
         try (Connection conn = dataSource.getConnection()) {
             // Build a query to fetch prices for all movies in the cart
             StringBuilder queryBuilder = new StringBuilder("SELECT id, price, title FROM movies WHERE id IN (");
