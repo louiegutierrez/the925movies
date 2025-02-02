@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,109 @@ public class PaymentServlet extends HttpServlet {
         } catch (NamingException e) {
             e.printStackTrace();
             System.err.println("Failed to initialize DataSource: " + e.getMessage());
+        }
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json");
+        PrintWriter out = response.getWriter();
+        HttpSession session = request.getSession();
+
+        Map<String, Integer> cart = (Map<String, Integer>) session.getAttribute("quantities");
+        if (cart == null || cart.isEmpty()) {
+            JsonObject errorJson = new JsonObject();
+            errorJson.addProperty("errorMessage", "Your cart is empty.");
+            out.write(errorJson.toString());
+            response.setStatus(400);
+            return;
+        }
+
+        Object totalObj = session.getAttribute("totalPrice");
+        if (totalObj == null) {
+            JsonObject errorJson = new JsonObject();
+            errorJson.addProperty("errorMessage", "No total price found in session.");
+            out.write(errorJson.toString());
+            response.setStatus(400);
+            return;
+        }
+
+        double totalPrice = (double) totalObj;
+
+
+        Object custObj = session.getAttribute("user");
+        if (custObj == null) {
+            JsonObject errorJson = new JsonObject();
+            errorJson.addProperty("errorMessage", "No customer ID found in session.");
+            out.write(errorJson.toString());
+            response.setStatus(400);
+            return;
+        }
+        int customerId = (int) custObj;
+
+        JsonObject responseJson = new JsonObject();
+        JsonArray salesArray = new JsonArray();
+
+        System.out.println(customerId);
+        System.out.println(cart);
+
+        try (Connection conn = dataSource.getConnection()) {
+            String lastSaleQuery =
+                    "SELECT s.id AS sale_id, m.title AS movie_title, s.quantity " +
+                            "FROM sales s " +
+                            "JOIN movies m ON s.movieId = m.id " +
+                            "WHERE s.customerId = ? AND s.movieId = ? " +
+                            "ORDER BY s.id DESC " +
+                            "LIMIT 1";
+            System.out.println("Query: " + lastSaleQuery);
+            try (PreparedStatement ps = conn.prepareStatement(lastSaleQuery)) {
+                for (Map.Entry<String, Integer> entry : cart.entrySet()) {
+                    String movieId = entry.getKey();
+                    ps.setInt(1, customerId);
+                    ps.setString(2, movieId);
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            int saleId = rs.getInt("sale_id");
+                            String movieTitle = rs.getString("movie_title");
+                            int quantity = rs.getInt("quantity");
+                            JsonObject saleJson = new JsonObject();
+                            saleJson.addProperty("saleID", saleId);
+                            saleJson.addProperty("movieTitle", movieTitle);
+                            saleJson.addProperty("quantity", quantity);
+                            salesArray.add(saleJson);
+                        } else {
+                            System.out.println("no sale found!????");
+                        }
+                    }
+                }
+            }
+
+            responseJson.add("sales", salesArray);
+            responseJson.addProperty("totalPrice", totalPrice);
+
+            // Remove cart and totalPrice from the session
+            session.removeAttribute("quantities");
+            session.removeAttribute("totalPrice");
+
+
+            responseJson.addProperty("status", "success");
+            out.write(responseJson.toString());
+            response.setStatus(200);
+
+        } catch (SQLException e) {
+            JsonObject errorJson = new JsonObject();
+            errorJson.addProperty("errorMessage", "SQL error: " + e.getMessage());
+            out.write(errorJson.toString());
+            request.getServletContext().log("Error during payment retrieval:", e);
+            response.setStatus(500);
+        } catch (Exception e) {
+            JsonObject errorJson = new JsonObject();
+            errorJson.addProperty("errorMessage", "An unexpected error occurred. Please try again later.");
+            out.write(errorJson.toString());
+            request.getServletContext().log("Error during payment retrieval:", e);
+            response.setStatus(500);
+        } finally {
+            out.close();
         }
     }
 
@@ -92,11 +197,6 @@ public class PaymentServlet extends HttpServlet {
                                         throw new SQLException("Failed to insert one or more sales records.");
                                     }
                                 }
-
-                                // get the Sales
-                                // query => SELECT id FROM sales WHERE customerID = ? ...
-
-                                session.removeAttribute("quantities");
 
                                 JsonObject jsonObject = new JsonObject();
                                 jsonObject.addProperty("status", "success");
