@@ -16,6 +16,7 @@ $(document).ready(function () {
             method: "POST",
             data: $(this).serialize(),
             success: function (response) {
+                window.location.href = "confirmation.html";
                 console.log("SUCCESS!", response);
             },
             error: function (jqXHR, textStatus, errorThrown) {
