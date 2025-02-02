@@ -66,7 +66,6 @@ class Genre {
         this.name = name;
     }
 
-    // Getter (required for JSON serialization)
     public String getName() {
         return name;
     }
