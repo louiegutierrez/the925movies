@@ -48,7 +48,7 @@ public class FormServlet extends HttpServlet {
             if (rs.next()) {
                 // Set session attribute
                 HttpSession session = request.getSession();
-                session.setAttribute("user", username);
+                session.setAttribute("user", rs.getInt("id"));
 
                 // Return success response
                 responseJsonObject.addProperty("status", "success");
