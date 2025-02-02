@@ -46,6 +46,8 @@ public class CartServlet extends HttpServlet {
         PriceResult priceResult = calculateTotalPrice(quantities);
         JsonObject responseJsonObject = getJsonObject(priceResult, quantities);
 
+        session.setAttribute("totalPrice", priceResult.getTotalPrice());
+
         responseJsonObject.addProperty("sessionID", sessionId);
         responseJsonObject.addProperty("lastAccessTime", lastAccessTime);
 
@@ -77,6 +79,8 @@ public class CartServlet extends HttpServlet {
 
         PriceResult priceResult = calculateTotalPrice(quantities);
         JsonObject responseJsonObject = getJsonObject(priceResult, quantities);
+
+        session.setAttribute("totalPrice", priceResult.getTotalPrice());
 
         // Write the response
         response.setContentType("application/json");
