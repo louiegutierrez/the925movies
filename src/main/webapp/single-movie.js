@@ -43,6 +43,9 @@ function handleMovieResult(resultData) {
         rowHTML += "</tr>";
         starTableBodyElement.append(rowHTML);
     }
+    let cartButton = jQuery("#cartButton");
+    cartButton.append(`<button class="addToCart refresh" data-movie-id="${resultData[0]['movie_id']}">Add To Cart</button>`);
+
 }
 
 let movieId = getParameterByName('id');
