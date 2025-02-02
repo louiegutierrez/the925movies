@@ -5,10 +5,17 @@ function handleSessionData(resultDataJson) {
     console.log(resultDataJson);
 
     cartMovies.empty();
-    if(Object.keys(resultDataJson["names"]).length === 0) {
+    let cartTotal = resultDataJson["total"] || 0; // Ensure cartTotal is defined
+
+    if (cartTotal === 0) {
         $("#cartTotal").text("Total: $0.00");
+        $("#checkout").prop("disabled", true).addClass("disabled"); // Disable checkout button
         return;
     }
+
+    $("#checkout").prop("disabled", false).removeClass("disabled"); // Enable checkout button
+    $("#cartTotal").text("Total: $" + cartTotal.toFixed(2));
+
     Object.keys(resultDataJson.quantities).forEach(movieId => {
         let quantity = resultDataJson.quantities[movieId];
         let price = resultDataJson.prices[movieId];
@@ -23,11 +30,8 @@ function handleSessionData(resultDataJson) {
                 <button class="btn btn-danger btn-sm deleteFromCart" data-movie-id="${movieId}" data-quantity="${quantity}"> DELETE </button>
             </td>
         </tr>`;
-        $("#cartTotal").text("Total: $" + resultDataJson["total"].toFixed(2));
         cartMovies.append(rowHTML);
     });
-
-
 }
 
 
@@ -78,7 +82,6 @@ $(document).on("click", ".removeFromCart", function () {
 $(document).on("click", ".deleteFromCart", function () {
     let movieId = $(this).data("movie-id");
     let quantity = $(this).data("quantity");
-    // console.log(Object.keys($(this).data("movie-id")["names"]).length);
     console.log("WOW! Movie ID:", movieId);
     $.ajax({
         url: "api/cart",
