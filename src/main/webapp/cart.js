@@ -20,6 +20,7 @@ function handleSessionData(resultDataJson) {
             <td>
                 <button class="btn btn-success btn-sm addToCart" data-movie-id="${movieId}">+1</button>
                 <button class="btn btn-danger btn-sm removeFromCart" data-movie-id="${movieId}">-1</button>
+                <button class="btn btn-danger btn-sm deleteFromCart" data-movie-id="${movieId}" data-quantity="${quantity}"> DELETE </button>
             </td>
         </tr>`;
         $("#cartTotal").text("Total: $" + resultDataJson["total"].toFixed(2));
@@ -60,6 +61,30 @@ $(document).on("click", ".removeFromCart", function () {
         method: "POST",
         data: {
             quantity: -1,
+            movieId: movieId
+        },
+        success: function (response) {
+            console.log("Movie removed to cart:", response);
+            alert("Movie removed to cart");
+            updateCart();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Error adding movie to cart:", textStatus, errorThrown);
+            console.error("Error adding movie to cart");
+        }
+    });
+});
+
+$(document).on("click", ".deleteFromCart", function () {
+    let movieId = $(this).data("movie-id");
+    let quantity = $(this).data("quantity");
+    // console.log(Object.keys($(this).data("movie-id")["names"]).length);
+    console.log("WOW! Movie ID:", movieId);
+    $.ajax({
+        url: "api/cart",
+        method: "POST",
+        data: {
+            quantity: -quantity,
             movieId: movieId
         },
         success: function (response) {
