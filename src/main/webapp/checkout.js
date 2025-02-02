@@ -18,11 +18,7 @@ $(document).ready(function () {
             method: "POST",
             data: $(this).serialize(),
             success: function (response) {
-                if (response.status === "success") {
-                    $("#message").text(response.message).css("color", "green");
-                } else {
-                    $("#message").text(response.errorMessage).css("color", "red");
-                }
+                console.log("SUCCESS!");
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 $("#message").text("An error occurred. Please try again.").css("color", "red");

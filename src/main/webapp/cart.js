@@ -1,10 +1,14 @@
-let cartMovies = $("#movie_table_body"); // Change this to target the <tbody>
+let cartMovies = $("#cart_table_body"); // Change this to target the <tbody>
 
 function handleSessionData(resultDataJson) {
     console.log("handle session response");
     console.log(resultDataJson);
 
     cartMovies.empty();
+    if(Object.keys(resultDataJson["names"]).length === 0) {
+        $("#cartTotal").text("Total: $0.00");
+        return;
+    }
     Object.keys(resultDataJson.quantities).forEach(movieId => {
         let quantity = resultDataJson.quantities[movieId];
         let price = resultDataJson.prices[movieId];
@@ -14,13 +18,15 @@ function handleSessionData(resultDataJson) {
             <td>${quantity}</td>
             <td>$${(price * quantity).toFixed(2)}</td>
             <td>
-                <button class="addToCart refresh" data-movie-id="${movieId}">Add</button>
-                <button class="removeFromCart refresh" data-movie-id="${movieId}">Remove</button>
+                <button class="addToCart" data-movie-id="${movieId}">Add</button>
+                <button class="removeFromCart" data-movie-id="${movieId}">Remove</button>
             </td>
         </tr>`;
         $("#cartTotal").text("Total: $" + resultDataJson["total"].toFixed(2));
         cartMovies.append(rowHTML);
     });
+
+
 }
 
 
@@ -37,6 +43,7 @@ $(document).on("click", ".addToCart", function () {
         success: function (response) {
             console.log("Movie added to cart:", response);
             alert("Movie added to cart");
+            updateCart();
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("Error adding movie to cart:", textStatus, errorThrown);
@@ -56,8 +63,9 @@ $(document).on("click", ".removeFromCart", function () {
             movieId: movieId
         },
         success: function (response) {
-            console.log("Movie added to cart:", response);
-            alert("Movie added to cart");
+            console.log("Movie removed to cart:", response);
+            alert("Movie removed to cart");
+            updateCart();
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("Error adding movie to cart:", textStatus, errorThrown);
@@ -65,12 +73,6 @@ $(document).on("click", ".removeFromCart", function () {
         }
     });
 });
-
-$(document).on("click", ".refresh", function() {
-    console.log("Refresh button clicked");
-    updateCart();
-});
-
 
 function updateCart(){
     $.ajax("api/cart", {
