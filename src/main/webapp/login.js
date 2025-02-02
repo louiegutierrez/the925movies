@@ -43,13 +43,14 @@ function createLoginForm() {
     let form = $("<form>", { id: "login_form_element" });
 
     form.append(
-        $("<label>", { for: "email", text: "Email" }),
-        $("<br>"),
-        $("<input>", { type: "email", id: "email", name: "email", required: "true" }),
-        $("<br>"),
-        $("<label>", { for: "password", text: "Password" }),
-        $("<br>"),
-        $("<input>", { type: "password", id: "password", name: "password", required: "true" })
+        $("<div>", { class: "form-group" }).append(
+            $("<label>", { for: "email", text: "Email" }),
+            $("<input>", { type: "email", id: "email", name: "email", class: "form-control", required: "true" })
+        ),
+        $("<div>", { class: "form-group" }).append(
+            $("<label>", { for: "password", text: "Password" }),
+            $("<input>", { type: "password", id: "password", name: "password", class: "form-control", required: "true" })
+        )
     );
 
     let button = $("<button>", {

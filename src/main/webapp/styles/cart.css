@@ -14,20 +14,9 @@ body {
     background-color: #fff;
 }
 
-/* Container for the Cart section */
-#cart {
-    max-width: 1200px;
-    margin: 1rem auto;
-    padding: 1.5rem;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
 #cart h1 {
     font-size: 2rem;
     color: #333;
-    margin-bottom: 1.5rem;
     text-align: center;
 }
 
@@ -36,7 +25,6 @@ body {
     margin: 1rem 0;
 }
 
-/* Cart Table */
 #cart-movies {
     width: 100%;
     border-collapse: collapse;
@@ -47,7 +35,7 @@ body {
 }
 
 #cart-movies thead {
-    background-color: #007bff; /* same as in movie-list.css */
+    background-color: #007bff;
     color: white;
 }
 
@@ -55,7 +43,7 @@ body {
     padding: 12px;
     text-transform: uppercase;
     font-weight: bold;
-    border-bottom: 3px solid #0056b3; /* same as in movie-list.css */
+    border-bottom: 3px solid #0056b3;
 }
 
 #cart-movies tbody tr {
@@ -66,7 +54,6 @@ body {
     padding: 10px;
 }
 
-/* Style the 'checkout' and 'back' links or buttons */
 #checkout, #back {
     display: inline-block;
     margin: 1rem 0.5rem;
@@ -83,28 +70,4 @@ body {
 #back:hover {
     background-color: #ffcc00;
     color: #333;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 768px) {
-    #cart {
-        padding: 1rem;
-    }
-
-    #cart h1 {
-        font-size: 1.5rem;
-    }
-
-    #cart h2 {
-        font-size: 1.1rem;
-    }
-
-    #cart-movies {
-        font-size: 16px;
-    }
-
-    #checkout,
-    #back {
-        margin: 1rem 0.25rem;
-    }
 }

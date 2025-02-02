@@ -18,8 +18,8 @@ function handleSessionData(resultDataJson) {
             <td>${quantity}</td>
             <td>$${(price * quantity).toFixed(2)}</td>
             <td>
-                <button class="addToCart" data-movie-id="${movieId}">Add</button>
-                <button class="removeFromCart" data-movie-id="${movieId}">Remove</button>
+                <button class="btn btn-success btn-sm addToCart" data-movie-id="${movieId}">+1</button>
+                <button class="btn btn-danger btn-sm removeFromCart" data-movie-id="${movieId}">-1</button>
             </td>
         </tr>`;
         $("#cartTotal").text("Total: $" + resultDataJson["total"].toFixed(2));
