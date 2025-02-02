@@ -1,0 +1,110 @@
+/* cart.css */
+
+/* Global reset/box-sizing (optional; include if not in a global CSS) */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Body styling (optional) */
+body {
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    background-color: #fff;
+}
+
+/* Container for the Cart section */
+#cart {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#cart h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+#cart h2 {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+}
+
+/* Cart Table */
+#cart-movies {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 18px;
+    text-align: left;
+    background: #f9f9f9;
+}
+
+#cart-movies thead {
+    background-color: #007bff; /* same as in movie-list.css */
+    color: white;
+}
+
+#cart-movies th {
+    padding: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+    border-bottom: 3px solid #0056b3; /* same as in movie-list.css */
+}
+
+#cart-movies tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+#cart-movies td {
+    padding: 10px;
+}
+
+/* Style the 'checkout' and 'back' links or buttons */
+#checkout, #back {
+    display: inline-block;
+    margin: 1rem 0.5rem;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+#checkout:hover,
+#back:hover {
+    background-color: #ffcc00;
+    color: #333;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    #cart {
+        padding: 1rem;
+    }
+
+    #cart h1 {
+        font-size: 1.5rem;
+    }
+
+    #cart h2 {
+        font-size: 1.1rem;
+    }
+
+    #cart-movies {
+        font-size: 16px;
+    }
+
+    #checkout,
+    #back {
+        margin: 1rem 0.25rem;
+    }
+}
