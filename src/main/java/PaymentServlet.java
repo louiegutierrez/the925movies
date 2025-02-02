@@ -3,6 +3,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
@@ -16,7 +17,6 @@ import jakarta.servlet.http.HttpSession;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
 
 @WebServlet(name = "PaymentServlet", urlPatterns = "/api/payment")
 public class PaymentServlet extends HttpServlet {
@@ -37,12 +37,13 @@ public class PaymentServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         HttpSession session = request.getSession();
-        String sessionId = session.getId();
 
-        String firstName = request.getParameter("firstName");
-        String lastName = request.getParameter("lastName");
-        String cc = request.getParameter("cc");
-        String date = request.getParameter("date");
+        String firstName = request.getParameter("first_name");
+        String lastName = request.getParameter("last_name");
+        String cc = request.getParameter("card_number");
+        String date = request.getParameter("expiration_date");
+
+        System.out.println(firstName + " " + lastName + " " + cc + " " + date);
 
         Map<String, Integer> cart = (Map<String, Integer>) session.getAttribute("quantities");
         if (cart == null || cart.isEmpty()) {
@@ -53,64 +54,77 @@ public class PaymentServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = dataSource.getConnection()) {
-            String query = "SELECT * FROM creditcards WHERE id = ? AND firstName = ? AND lastName = ? AND expiration = ?";
-            PreparedStatement ps = conn.prepareStatement(query);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM creditcards WHERE id = ? AND firstName = ? AND lastName = ? AND expiration = ?");
+             PreparedStatement customerPs = conn.prepareStatement("SELECT id FROM customers WHERE ccId = ?")) {
+
+            // Validate credit card
             ps.setString(1, cc);
             ps.setString(2, firstName);
             ps.setString(3, lastName);
             ps.setString(4, date);
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println("Credit card validated successfully.");
 
-            if (rs.next()) {
-                System.out.println("Credit card validated successfully.");
-                String customerQuery = "SELECT id FROM customers WHERE ccId = ?";
-                PreparedStatement customerPs = conn.prepareStatement(customerQuery);
-                customerPs.setString(1, cc);
-                ResultSet customerRs = customerPs.executeQuery();
+                    // Find customer ID
+                    customerPs.setString(1, cc);
+                    try (ResultSet customerRs = customerPs.executeQuery()) {
+                        if (customerRs.next()) {
+                            int customerId = customerRs.getInt("id");
 
-                if (customerRs.next()) {
-                    int customerId = customerRs.getInt("id");
+                            // Insert sales records
+                            String insertQuery = "INSERT INTO sales (customerId, movieId, quantity, saleDate) VALUES (?, ?, ?, NOW())";
+                            try (PreparedStatement insertPs = conn.prepareStatement(insertQuery)) {
+                                for (Map.Entry<String, Integer> entry : cart.entrySet()) {
+                                    String movieId = entry.getKey();
+                                    int quantity = entry.getValue();
 
-                    String insertQuery = "INSERT INTO sales (customerId, movieId, quantity, saleDate) VALUES (?, ?, ?, NOW())";
-                    PreparedStatement insertPs = conn.prepareStatement(insertQuery);
+                                    insertPs.setInt(1, customerId);
+                                    insertPs.setString(2, movieId);
+                                    insertPs.setInt(3, quantity);
+                                    insertPs.addBatch();
+                                }
 
-                    for (Map.Entry<String, Integer> entry : cart.entrySet()) {
-                        String movieId = entry.getKey();
-                        int quantity = entry.getValue();
+                                int[] batchResults = insertPs.executeBatch();
+                                for (int result : batchResults) {
+                                    if (result == PreparedStatement.EXECUTE_FAILED) {
+                                        throw new SQLException("Failed to insert one or more sales records.");
+                                    }
+                                }
 
-                        insertPs.setInt(1, customerId);
-                        insertPs.setString(2, movieId);
-                        insertPs.setInt(3, quantity);
-                        insertPs.addBatch();
+                                // get the Sales
+                                // query => SELECT id FROM sales WHERE customerID = ? ...
+
+                                session.removeAttribute("quantities");
+
+                                JsonObject jsonObject = new JsonObject();
+                                jsonObject.addProperty("status", "success");
+                                jsonObject.addProperty("message", "Order placed successfully!");
+                                jsonObject.addProperty("customerID", "Order placed successfully!");
+                                out.write(jsonObject.toString());
+                            }
+                        } else {
+                            JsonObject jsonObject = new JsonObject();
+                            jsonObject.addProperty("errorMessage", "No customer found for the provided credit card.");
+                            out.write(jsonObject.toString());
+                            response.setStatus(400);
+                        }
                     }
-
-                    insertPs.executeBatch();
-
-                    session.removeAttribute("quantities");
-
-                    JsonObject jsonObject = new JsonObject();
-                    jsonObject.addProperty("status", "success");
-                    jsonObject.addProperty("message", "Order placed successfully!");
-                    out.write(jsonObject.toString());
                 } else {
                     JsonObject jsonObject = new JsonObject();
-                    jsonObject.addProperty("errorMessage", "No customer found for the provided credit card.");
+                    jsonObject.addProperty("errorMessage", "Invalid credit card information. Please try again.");
                     out.write(jsonObject.toString());
                     response.setStatus(400);
                 }
-            } else {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("errorMessage", "Invalid credit card information. Please try again.");
-                out.write(jsonObject.toString());
-                response.setStatus(400);
             }
         } catch (Exception e) {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("errorMessage", e.getMessage());
+            jsonObject.addProperty("errorMessage", "An unexpected error occurred. Please try again later.");
             out.write(jsonObject.toString());
 
-            request.getServletContext().log("Error:", e);
+            // Log the full error on the server side
+            request.getServletContext().log("Error during payment processing:", e);
             response.setStatus(500);
         } finally {
             out.close();
