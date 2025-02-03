@@ -32,70 +32,104 @@ public class SearchingServlet extends HttpServlet {
         }
     }
 
-    private String handleSessionParam(HttpServletRequest request, HttpSession session, String paramName) {
-        String value = request.getParameter(paramName);
-        if (value != null && !value.trim().isEmpty()) {
-            session.setAttribute(paramName, value);
-        } else {
-            Object sessionVal = session.getAttribute(paramName);
-            value = (sessionVal == null) ? null : sessionVal.toString();
-        }
-        return value;
-    }
-
-    private int handleSessionIntParam(HttpServletRequest request, HttpSession session, String paramName, int defaultValue) {
-        String paramStr = request.getParameter(paramName);
-        if (paramStr != null && !paramStr.trim().isEmpty()) {
-            try {
-                int val = Integer.parseInt(paramStr);
-                System.out.println("setting attribute " + paramName + " in functioin as " + val);
-                session.setAttribute(paramName, val);
-                return val;
-            } catch (NumberFormatException e) {
-                Object sessVal = session.getAttribute(paramName);
-                if (sessVal == null) {
-                    return defaultValue;
-                }
-                return (int) sessVal;
-            }
-        } else {
-            Object sessVal = session.getAttribute(paramName);
-            if (sessVal == null) {
-                return defaultValue;
-            }
-            return (int) sessVal;
-        }
-    }
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        String title = handleSessionParam(request, session, "title");
-        String year = handleSessionParam(request, session, "year");
-        String director = handleSessionParam(request, session, "director");
-        String actor = handleSessionParam(request, session, "star");
-        String genre = handleSessionParam(request, session, "genre");
-        String letter = handleSessionParam(request, session, "letter");
+        boolean hasParam = (request.getParameter("title") != null) ||
+                (request.getParameter("year") != null) ||
+                (request.getParameter("director") != null) ||
+                (request.getParameter("star") != null) ||
+                (request.getParameter("genre") != null) ||
+                (request.getParameter("letter") != null);
 
-        int page = handleSessionIntParam(request, session, "page", 1);
-        int size = handleSessionIntParam(request, session, "size", 25);
-        int sortOption = handleSessionIntParam(request, session, "sort", 7);
-        if (page < 1) {
-            page = 1;
-            session.setAttribute("page", page);
+        String title, year, director, actor, genre, letter;
+        if (hasParam) {
+            title = request.getParameter("title") == null ? "" : request.getParameter("title").trim();
+            year = request.getParameter("year") == null ? "" : request.getParameter("year").trim();
+            director = request.getParameter("director") == null ? "" : request.getParameter("director").trim();
+            actor = request.getParameter("star") == null ? "" : request.getParameter("star").trim();
+            genre = request.getParameter("genre") == null ? "" : request.getParameter("genre").trim();
+            letter = request.getParameter("letter") == null ? "" : request.getParameter("letter").trim();
+        } else {
+            title = session.getAttribute("title") == null ? "" : session.getAttribute("title").toString();
+            year = session.getAttribute("year")  == null ? "" : session.getAttribute("year").toString();
+            director = session.getAttribute("director") == null ? "" : session.getAttribute("director").toString();
+            actor = session.getAttribute("star") == null ? "" : session.getAttribute("star").toString();
+            genre = session.getAttribute("genre") == null ? "" : session.getAttribute("genre").toString();
+            letter = session.getAttribute("letter") == null ? "" : session.getAttribute("letter").toString();
         }
-        if (!Arrays.asList(10, 25, 50, 100).contains(size)) {
-            size = 25;
-            session.setAttribute("size", size);
-        }
-        if (sortOption < 1 || sortOption > 8) {
-            sortOption = 7;
-            session.setAttribute("sort", sortOption);
+        // if genre or letter are not null, then title, year, director, and actor are null
+        // you cannot search for a Title Year Director and Actor with a genre/letter
+        if (!genre.isEmpty() || !letter.isEmpty()) {
+            title = "";
+            year = "";
+            director = "";
+            actor = "";
+        } else {
+            genre = "";
+            letter = "";
         }
 
+        // previousSessionValues
+        String prevTitle = session.getAttribute("title") == null ? "" : session.getAttribute("title").toString();
+        String prevYear = session.getAttribute("year") == null ? "" : session.getAttribute("year").toString();
+        String prevDirector = session.getAttribute("director") == null ? "" : session.getAttribute("director").toString();
+        String prevActor = session.getAttribute("star") == null ? "" : session.getAttribute("star").toString();
+        String prevGenre = session.getAttribute("genre") == null ? "" : session.getAttribute("genre").toString();
+        String prevLetter = session.getAttribute("letter") == null ? "" : session.getAttribute("letter").toString();
+
+        // check values
+        boolean searchChanged = false;
+        if (hasParam) {
+            searchChanged = !title.equals(prevTitle) ||
+                    !year.equals(prevYear) ||
+                    !director.equals(prevDirector) ||
+                    !actor.equals(prevActor) ||
+                    !genre.equals(prevGenre) ||
+                    !letter.equals(prevLetter);
+        }
+
+
+        // if the previous doesn't match the new, set page, size, sort to default
+        // special cases for first if are when session is empty so no previous
+        // also when there's no passed parameters so it should just take it from
+        // session (if it's both null it'll be top 25 by default)
+        int defaultPage = 1, defaultSize = 25, defaultSort = 7;
+        int page, size, sortOption;
+        if (searchChanged) {
+            page = defaultPage;
+            size = defaultSize;
+            sortOption = defaultSort;
+        } else {
+            // else page, size, sort should be the ones given by parameter/session
+            // special cases for else: if there's no parameter, you should get from session
+            // these should only update when the previous session matches current queries, else
+            // it should be set to 1, 25, 7 which are the default values
+
+            page = (request.getParameter("page") != null)
+                    ? Integer.parseInt(request.getParameter("page"))
+                    : (session.getAttribute("page") == null ? defaultPage : (int) session.getAttribute("page"));
+            size = (request.getParameter("size") != null)
+                    ? Integer.parseInt(request.getParameter("size"))
+                    : (session.getAttribute("size") == null ? defaultSize : (int) session.getAttribute("size"));
+            sortOption = (request.getParameter("sort") != null)
+                    ? Integer.parseInt(request.getParameter("sort"))
+                    : (session.getAttribute("sort") == null ? defaultSort : (int) session.getAttribute("sort"));
+        }
+
+        // set to session for these queries
+        session.setAttribute("title", title);
+        session.setAttribute("year", year);
+        session.setAttribute("director", director);
+        session.setAttribute("actor", actor);
+        session.setAttribute("genre", genre);
+        session.setAttribute("letter", letter);
+        session.setAttribute("page", page);
+        session.setAttribute("size", size);
+        session.setAttribute("sort", sortOption);
 
         // Print debug
         System.out.println("title=" + title + ", year=" + year
