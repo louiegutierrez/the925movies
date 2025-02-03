@@ -124,7 +124,7 @@ public class SearchingServlet extends HttpServlet {
         session.setAttribute("title", title);
         session.setAttribute("year", year);
         session.setAttribute("director", director);
-        session.setAttribute("actor", actor);
+        session.setAttribute("star", actor);
         session.setAttribute("genre", genre);
         session.setAttribute("letter", letter);
         session.setAttribute("page", page);
