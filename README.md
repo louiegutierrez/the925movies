@@ -1,15 +1,18 @@
-# CS122B PROJECT 1
+# CS122B PROJECT 2
 ## BY LEONARDO GUTIERREZ && MARTIN KIMBALL
 
-#### VIDEO URL : (https://www.youtube.com/watch?v=tmeFcptb0Jc)
+#### VIDEO URL : (INSERT URL HERE)
 
 #### MARTIN CONTRIBUTIONS:
-- Set up html & js files
-- Styled pages with CSS
+- Majority Frontend Contributions
+- Added Cart, Confirmation, Checkout, Login, Logout Files
+- Implemented Styling for multiple pages
+- LoginFilter
 
 
 #### LEONARDO CONTRIBUTIONS:
-- Set inital code base with new files and structure
-- Set up AWS instance
-- Set up Servlet Java Files
+- Majority Backend Contributions
+- Added/Remodeled Servlets for HTML pages
+- Implemented Nav Bar Styling and Implementation of Search
+- Browsing Implementation
 
