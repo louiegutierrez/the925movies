@@ -16,3 +16,5 @@
 - Implemented Nav Bar Styling and Implementation of Search
 - Browsing Implementation
 
+## SUBSTRING MATCHING:
+- Implemented in SearchingServlet with % search_term % where it'll search for where it appears anywhere in the string
