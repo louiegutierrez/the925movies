@@ -1,7 +1,7 @@
 # CS122B PROJECT 2
 ## BY LEONARDO GUTIERREZ && MARTIN KIMBALL
 
-#### VIDEO URL : (INSERT URL HERE)
+#### VIDEO URL : https://youtu.be/OurjAIgL4AU
 
 #### MARTIN CONTRIBUTIONS:
 - Majority Frontend Contributions
