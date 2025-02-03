@@ -60,13 +60,23 @@ function handleSearchResult(resultData) {
 
 function fetchMovieList() {
     let url = buildQueryURL();
+
+    jQuery("#loadingIndicator").show();
+    jQuery("#movie_table").hide();
+
     jQuery.ajax({
         dataType: "json",
         method: "GET",
         url: url,
-        success: (resultData) => handleSearchResult(resultData),
+        success: (resultData) => {
+            handleSearchResult(resultData);
+            jQuery("#loadingIndicator").hide();
+            jQuery("#movie_table").show();
+        },
         error: (xhr, status, error) => {
             console.log("Error fetching:", status, error);
+            jQuery("#loadingIndicator").hide();
+            jQuery("#movie_table").show();
         }
     });
 }
