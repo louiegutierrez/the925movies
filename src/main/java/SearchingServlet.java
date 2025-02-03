@@ -156,30 +156,34 @@ public class SearchingServlet extends HttpServlet {
             queryBuilder.append("(")
                     .append("  SELECT GROUP_CONCAT(sidsub.star_id SEPARATOR ', ') ")
                     .append("  FROM (")
-                    .append("    SELECT ")
-                    .append("      s.id AS star_id, ")
-                    .append("      (SELECT COUNT(*) FROM stars_in_movies sim2 ")
-                    .append("       WHERE sim2.starId = s.id) AS total_appearances ")
+                    .append("    SELECT s.id AS star_id ")
                     .append("    FROM stars_in_movies sm ")
                     .append("    JOIN stars s ON sm.starId = s.id ")
+                    .append("    LEFT JOIN (")
+                    .append("      SELECT starId, COUNT(*) AS star_count ")
+                    .append("      FROM stars_in_movies ")
+                    .append("      GROUP BY starId ")
+                    .append("    ) AS star_counts ON star_counts.starId = s.id ")
                     .append("    WHERE sm.movieId = m.id ")
-                    .append("    GROUP BY s.id, s.name ")
-                    .append("    ORDER BY total_appearances DESC, s.name ASC ")
+                    .append("    GROUP BY s.id, s.name, star_counts.star_count ")
+                    .append("    ORDER BY star_counts.star_count DESC, s.name ASC ")
                     .append("    LIMIT 3 ")
                     .append("  ) AS sidsub ")
                     .append(") AS star_ids, ");
             queryBuilder.append("(")
                     .append("  SELECT GROUP_CONCAT(snamesub.star_name SEPARATOR ', ') ")
                     .append("  FROM (")
-                    .append("    SELECT ")
-                    .append("      s.name AS star_name, ")
-                    .append("      (SELECT COUNT(*) FROM stars_in_movies sim2 ")
-                    .append("       WHERE sim2.starId = s.id) AS total_appearances ")
+                    .append("    SELECT s.name AS star_name ")
                     .append("    FROM stars_in_movies sm ")
                     .append("    JOIN stars s ON sm.starId = s.id ")
+                    .append("    LEFT JOIN (")
+                    .append("      SELECT starId, COUNT(*) AS star_count ")
+                    .append("      FROM stars_in_movies ")
+                    .append("      GROUP BY starId ")
+                    .append("    ) AS star_counts ON star_counts.starId = s.id ")
                     .append("    WHERE sm.movieId = m.id ")
-                    .append("    GROUP BY s.id, s.name ")
-                    .append("    ORDER BY total_appearances DESC, s.name ASC ")
+                    .append("    GROUP BY s.id, s.name, star_counts.star_count ")
+                    .append("    ORDER BY star_counts.star_count DESC, s.name ASC ")
                     .append("    LIMIT 3 ")
                     .append("  ) AS snamesub ")
                     .append(") AS stars, ");
@@ -256,6 +260,7 @@ public class SearchingServlet extends HttpServlet {
             queryBuilder.append("LIMIT ? OFFSET ? ");
 
             String query = queryBuilder.toString();
+            System.out.println(query);
             PreparedStatement statement = conn.prepareStatement(query);
 
             int paramIndex = 1;
