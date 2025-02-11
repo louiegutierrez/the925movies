@@ -17,6 +17,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.jasypt.util.password.PasswordEncryptor;
+import org.jasypt.util.password.StrongPasswordEncryptor;
+
 @WebServlet(name = "FormServlet", urlPatterns = "/api/login")
 public class FormServlet extends HttpServlet {
     private DataSource dataSource;
@@ -36,9 +39,30 @@ public class FormServlet extends HttpServlet {
         String username = request.getParameter("email");
         String password = request.getParameter("password");
 
+        PasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
+        password = passwordEncryptor.encryptPassword(password);
+
         JsonObject responseJsonObject = new JsonObject();
 
         try (Connection conn = dataSource.getConnection()) {
+            // first check if it's an employee
+            String employeeQuery = "SELECT * FROM employees WHERE email = ? AND password = ?";
+            PreparedStatement employeePs = conn.prepareStatement(employeeQuery);
+            employeePs.setString(1, username);
+            employeePs.setString(2, password);
+            ResultSet employeeRs = employeePs.executeQuery();
+            if (employeeRs.next()) {
+                HttpSession session = request.getSession();
+                session.setAttribute("user", employeeRs.getInt("id"));
+
+                responseJsonObject.addProperty("status", "success");
+                responseJsonObject.addProperty("message", "success");
+                responseJsonObject.addProperty("role", "employee");
+                out.write(responseJsonObject.toString());
+                out.close();
+                return;
+            }
+            // customer if not employee
             String query = "SELECT * FROM customers WHERE email = ? AND password = ?";
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, username);
@@ -53,6 +77,7 @@ public class FormServlet extends HttpServlet {
                 // Return success response
                 responseJsonObject.addProperty("status", "success");
                 responseJsonObject.addProperty("message", "success");
+                responseJsonObject.addProperty("role", "customer");
             } else {
                 // Return error response
                 responseJsonObject.addProperty("status", "fail");
