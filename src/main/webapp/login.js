@@ -6,7 +6,6 @@ function handleLoginResult(resultData) {
         window.location.replace("browse.html");
     } else {
         alert(resultData["message"]);
-        $("#login_error_message").text(resultData["message"]);
     }
 }
 
@@ -35,7 +34,6 @@ function submitLoginForm(event) {
         success: handleLoginResult,
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("Login request failed:", textStatus, errorThrown);
-            $("#login_error_message").text("Login failed. Please try again.");
         }
     });
 }
