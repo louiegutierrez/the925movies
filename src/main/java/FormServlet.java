@@ -39,19 +39,15 @@ public class FormServlet extends HttpServlet {
         String username = request.getParameter("email");
         String password = request.getParameter("password");
 
-        PasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-        password = passwordEncryptor.encryptPassword(password);
-
         JsonObject responseJsonObject = new JsonObject();
 
         try (Connection conn = dataSource.getConnection()) {
             // first check if it's an employee
-            String employeeQuery = "SELECT * FROM employees WHERE email = ? AND password = ?";
+            String employeeQuery = "SELECT * FROM employees WHERE email = ?";
             PreparedStatement employeePs = conn.prepareStatement(employeeQuery);
             employeePs.setString(1, username);
-            employeePs.setString(2, password);
             ResultSet employeeRs = employeePs.executeQuery();
-            if (employeeRs.next()) {
+            if (employeeRs.next() && new StrongPasswordEncryptor().checkPassword(password, employeeRs.getString("password"))) {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", employeeRs.getInt("id"));
 
@@ -63,13 +59,12 @@ public class FormServlet extends HttpServlet {
                 return;
             }
             // customer if not employee
-            String query = "SELECT * FROM customers WHERE email = ? AND password = ?";
+            String query = "SELECT * FROM customers WHERE email = ?";
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, username);
-            ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
+            if (rs.next() && new StrongPasswordEncryptor().checkPassword(password, rs.getString("password"))) {
                 // Set session attribute
                 HttpSession session = request.getSession();
                 session.setAttribute("user", rs.getInt("id"));
