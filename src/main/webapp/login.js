@@ -1,35 +1,37 @@
 function handleLoginResult(resultData) {
-    console.log("handle login response");
-    console.log(resultData);
+    console.log("handle login response", resultData);
 
-    // If login succeeds, redirect the user to browse.html
     if (resultData["status"] === "success") {
-        window.location.replace("browse.html");
         alert("Logged in Successfully");
-
+        window.location.replace("browse.html");
     } else {
-        // If login fails, display the error message
-        console.log("show error message");
-        console.log(resultData["message"]);
         alert(resultData["message"]);
         $("#login_error_message").text(resultData["message"]);
     }
 }
 
-function submitLoginForm(formSubmitEvent) {
-    console.log("submit login form");
-    formSubmitEvent.preventDefault();
+function submitLoginForm(event) {
+    event.preventDefault(); // Prevent default form submission
 
     let email = $("#email").val();
     let password = $("#password").val();
+    let recaptchaResponse = grecaptcha.getResponse(); // Get reCAPTCHA response
 
-    console.log("Email:", email);
-    console.log("Password:", password);
+    if (!recaptchaResponse) {
+        alert("Please complete the reCAPTCHA verification.");
+        return;
+    }
+
+    console.log("Submitting login form with reCAPTCHA");
 
     $.ajax({
         url: "api/login",
         method: "POST",
-        data: $("#login_form_element").serialize(),
+        data: {
+            email: email,
+            password: password,
+            "g-recaptcha-response": recaptchaResponse
+        },
         success: handleLoginResult,
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("Login request failed:", textStatus, errorThrown);
@@ -45,23 +47,17 @@ function createLoginForm() {
     form.append(
         $("<div>", { class: "form-group" }).append(
             $("<label>", { for: "email", text: "Email" }),
-            $("<input>", { type: "email", id: "email", name: "email", class: "form-control", required: "true" })
+            $("<input>", { type: "email", id: "email", name: "email", class: "form-control", required: true })
         ),
         $("<div>", { class: "form-group" }).append(
             $("<label>", { for: "password", text: "Password" }),
-            $("<input>", { type: "password", id: "password", name: "password", class: "form-control", required: "true" })
-        )
+            $("<input>", { type: "password", id: "password", name: "password", class: "form-control", required: true })
+        ),
+        $("<div>", { class: "g-recaptcha", "data-sitekey": "6LfpZtMqAAAAALDMnx3Frw2kDYGYIvslpdAyaTCy" }),
+        $("<button>", { text: "Submit", type: "submit", id: "submitButton" })
     );
 
-    let button = $("<button>", {
-        text: "Submit",
-        type: "submit",
-        id: "submitButton"
-    });
-
-    form.append(button);
     loginFormElement.append(form);
-
     form.submit(submitLoginForm);
 }
 
