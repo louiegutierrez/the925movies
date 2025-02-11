@@ -2,26 +2,30 @@ function handleLoginResult(resultData) {
     console.log("handle login response", resultData);
 
     if (resultData["status"] === "success") {
-        alert("Logged in Successfully");
-        window.location.replace("browse.html");
+        let redirectUrl = resultData["role"] === "employee" ? "dashboard.html" : "browse.html";
+        alert(`Logged in successfully as ${resultData["role"]}`);
+        window.location.replace(redirectUrl);
     } else {
-        alert(resultData["message"]);
+        alert(resultData["message"] || "Login failed. Please try again.");
     }
 }
 
 function submitLoginForm(event) {
     event.preventDefault(); // Prevent default form submission
 
-    let email = $("#email").val();
-    let password = $("#password").val();
+    let email = $("#email").val().trim();
+    let password = $("#password").val().trim();
     let recaptchaResponse = grecaptcha.getResponse(); // Get reCAPTCHA response
+
+    if (!email || !password) {
+        alert("Please fill in all fields.");
+        return;
+    }
 
     if (!recaptchaResponse) {
         alert("Please complete the reCAPTCHA verification.");
         return;
     }
-
-    console.log("Submitting login form with reCAPTCHA");
 
     $.ajax({
         url: "api/login",
@@ -29,11 +33,12 @@ function submitLoginForm(event) {
         data: {
             email: email,
             password: password,
-            "g-recaptcha-response": recaptchaResponse
+            "g-recaptcha-response": recaptchaResponse,
         },
         success: handleLoginResult,
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("Login request failed:", textStatus, errorThrown);
+            alert("Login request failed. Please check your connection and try again.");
         }
     });
 }
@@ -51,11 +56,14 @@ function createLoginForm() {
             $("<label>", { for: "password", text: "Password" }),
             $("<input>", { type: "password", id: "password", name: "password", class: "form-control", required: true })
         ),
-        $("<div>", { class: "g-recaptcha", "data-sitekey": "6LfpZtMqAAAAALDMnx3Frw2kDYGYIvslpdAyaTCy" }),
-        $("<button>", { text: "Submit", type: "submit", id: "submitButton" })
+        $("<div>", { class: "form-group" }).append(
+            $("<div>", { class: "g-recaptcha", "data-sitekey": "6LfpZtMqAAAAALDMnx3Frw2kDYGYIvslpdAyaTCy" })
+        ),
+        $("<button>", { text: "Login", type: "submit", class: "btn btn-primary" })
     );
 
     loginFormElement.append(form);
+
     form.submit(submitLoginForm);
 }
 
