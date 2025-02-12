@@ -49,7 +49,9 @@ public class FormServlet extends HttpServlet {
             ResultSet employeeRs = employeePs.executeQuery();
             if (employeeRs.next() && new StrongPasswordEncryptor().checkPassword(password, employeeRs.getString("password"))) {
                 HttpSession session = request.getSession();
-                session.setAttribute("user", employeeRs.getInt("id"));
+                System.out.println("Employee logged in");
+                session.setAttribute("user", "employee");
+                session.setAttribute("role", "employee");
 
                 responseJsonObject.addProperty("status", "success");
                 responseJsonObject.addProperty("message", "success");
@@ -68,6 +70,7 @@ public class FormServlet extends HttpServlet {
                 // Set session attribute
                 HttpSession session = request.getSession();
                 session.setAttribute("user", rs.getInt("id"));
+                session.setAttribute("role", "customer");
 
                 // Return success response
                 responseJsonObject.addProperty("status", "success");
