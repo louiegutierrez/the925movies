@@ -33,43 +33,41 @@ proc: BEGIN
     INSERT INTO movies(id, title, year, director, price)
     VALUES(newMovieId, in_title, in_year, in_director, randomPrice);
 
-    IF (in_star_name IS NOT NULL AND TRIM(in_star_name) <> '') THEN
-        SELECT s.id INTO existingStarId
-        FROM stars s
-        WHERE s.name = in_star_name
-        LIMIT 1;
 
-        IF existingStarId IS NULL THEN
-            SET newStarId = (SELECT CONCAT("nm", LPAD(CAST(SUBSTR(MAX(id), 3) AS UNSIGNED) + 1, 7, '0')) FROM stars LIMIT 1);
-            IF newStarId IS NULL THEN
-                SET newStarId = 'nm0000001';
-            END IF;
+    SELECT s.id INTO existingStarId
+    FROM stars s
+    WHERE s.name = in_star_name
+    LIMIT 1;
 
-            INSERT INTO stars(id, name)
-            VALUES(newStarId, in_star_name);
-        ELSE
-            SET newStarId = existingStarId;
+    IF existingStarId IS NULL THEN
+        SET newStarId = (SELECT CONCAT("nm", LPAD(CAST(SUBSTR(MAX(id), 3) AS UNSIGNED) + 1, 7, '0')) FROM stars LIMIT 1);
+        IF newStarId IS NULL THEN
+            SET newStarId = 'nm0000001';
         END IF;
 
-        INSERT INTO stars_in_movies(starId, movieId) VALUES(newStarId, newMovieId);
+        INSERT INTO stars(id, name)
+        VALUES(newStarId, in_star_name);
+    ELSE
+        SET newStarId = existingStarId;
     END IF;
 
-    IF (in_genre_name IS NOT NULL AND TRIM(in_genre_name) <> '') THEN
+    INSERT INTO stars_in_movies(starId, movieId) VALUES(newStarId, newMovieId);
 
-        SELECT g.id INTO existingGenreId
-        FROM genres g
-        WHERE g.name = in_genre_name
-        LIMIT 1;
 
-        IF existingGenreId IS NULL THEN
-            INSERT INTO genres(name) VALUES(in_genre_name);
-            SET newGenreId = LAST_INSERT_ID();
-        ELSE
-            SET newGenreId = existingGenreId;
-        END IF;
+    SELECT g.id INTO existingGenreId
+    FROM genres g
+    WHERE g.name = in_genre_name
+    LIMIT 1;
 
-        INSERT INTO genres_in_movies(genreId, movieId) VALUES(newGenreId, newMovieId);
+    IF existingGenreId IS NULL THEN
+        INSERT INTO genres(name) VALUES(in_genre_name);
+        SET newGenreId = LAST_INSERT_ID();
+    ELSE
+        SET newGenreId = existingGenreId;
     END IF;
+
+    INSERT INTO genres_in_movies(genreId, movieId) VALUES(newGenreId, newMovieId);
+
     SELECT CONCAT("New movie added with id: ", newMovieId) AS message;
 END$$
 DELIMITER ;

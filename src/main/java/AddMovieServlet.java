@@ -47,16 +47,9 @@ public class AddMovieServlet extends HttpServlet {
         System.out.println("Star name: " + starName + " Genre name: " + genreName +
                 " Director: " + director + " Title: " + title + " Year: " + yearStr);
 
-        if (title == null || yearStr == null || director == null) {
+        if (title == null || yearStr == null || director == null || genreName == null || starName == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing required fields");
             return;
-        }
-
-        if (starName == null || starName.trim().isEmpty()) {
-            starName = null;
-        }
-        if (genreName == null || genreName.trim().isEmpty()) {
-            genreName = null;
         }
 
         try (Connection conn = dataSource.getConnection()) {
@@ -65,8 +58,8 @@ public class AddMovieServlet extends HttpServlet {
             cs.setString(1, title);
             cs.setInt(2, Integer.parseInt(yearStr));
             cs.setString(3, director);
-            cs.setString(4, Objects.requireNonNullElse(starName, ""));
-            cs.setString(5, Objects.requireNonNullElse(genreName, ""));
+            cs.setString(4, starName);
+            cs.setString(5, genreName);
 
             System.out.println("Calling stored procedure");
 
