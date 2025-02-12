@@ -198,9 +198,6 @@ public class SearchingServlet extends HttpServlet {
 
             // Sorting
             switch (sortOption) {
-                case 1:
-                    queryBuilder.append("ORDER BY m.title ASC, rating ASC ");
-                    break;
                 case 2:
                     queryBuilder.append("ORDER BY m.title ASC, rating DESC ");
                     break;
@@ -274,10 +271,21 @@ public class SearchingServlet extends HttpServlet {
                 movieJson.addProperty("title", rs.getString("title"));
                 movieJson.addProperty("year", rs.getInt("year"));
                 movieJson.addProperty("director", rs.getString("director"));
-                movieJson.addProperty("three_genres", rs.getString("genres"));
-                movieJson.addProperty("three_stars", rs.getString("stars"));
-                movieJson.addProperty("three_star_ids",
-                        rs.getString("star_ids") == null ? "" : rs.getString("star_ids"));
+                String genresValue = rs.getString("genres");
+                if (genresValue == null) {
+                    genresValue = "";
+                }
+                movieJson.addProperty("three_genres", genresValue);
+                String starsValue = rs.getString("stars");
+                if (starsValue == null) {
+                    starsValue = "";
+                }
+                movieJson.addProperty("three_stars", starsValue);
+                String starIdsValue = rs.getString("star_ids");
+                if (starIdsValue == null) {
+                    starIdsValue = "";
+                }
+                movieJson.addProperty("three_star_ids", starIdsValue);
                 movieJson.addProperty("rating", rs.getFloat("rating"));
                 moviesArray.add(movieJson);
             }

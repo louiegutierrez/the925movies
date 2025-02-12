@@ -33,7 +33,7 @@ public class SingleMovieServlet extends HttpServlet {
         response.setContentType("application/json");
 
         String id = request.getParameter("id");
-        request.getServletContext().log("Getting id: " + id);
+        System.out.println("Getting id: " + id);
         PrintWriter out = response.getWriter();
 
         try (Connection conn = dataSource.getConnection()) {
@@ -47,7 +47,7 @@ public class SingleMovieServlet extends HttpServlet {
                             "       GROUP_CONCAT(DISTINCT s.name ORDER BY star_counts.star_count DESC, s.name ASC SEPARATOR ', ') AS all_star_names, " +
                             "       r.rating AS rating " +
                             "FROM movies m " +
-                            "JOIN ratings r ON r.movieId = m.id " +
+                            "LEFT JOIN ratings r ON r.movieId = m.id " +
                             "LEFT JOIN genres_in_movies gim ON gim.movieId = m.id " +
                             "LEFT JOIN genres g ON g.id = gim.genreId " +
                             "LEFT JOIN stars_in_movies sim ON sim.movieId = m.id " +
@@ -91,7 +91,7 @@ public class SingleMovieServlet extends HttpServlet {
             rs.close();
             ps.close();
 
-            request.getServletContext().log("getting " + jsonArray.size() + " results");
+            System.out.println("getting " + jsonArray.size() + " results");
 
             out.write(jsonArray.toString());
             response.setStatus(200);
