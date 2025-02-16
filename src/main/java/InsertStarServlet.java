@@ -1,5 +1,4 @@
 import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -83,7 +82,7 @@ public class InsertStarServlet extends HttpServlet {
                 System.out.println("Result " + rs.getString(1));
                 System.out.println("Result " + rs.getString(1).substring(2));
                 int maxId = Integer.parseInt(rs.getString(1).substring(2)) + 1;
-                return "nm" + String.format("%06d", maxId);
+                return "nm" + maxId;
             }
         } catch (SQLException e) {
             throw new SQLException("Failed to generate new star ID", e);
