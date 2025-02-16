@@ -13,7 +13,12 @@ $(document).ready(function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.error("Logout failed:", textStatus, errorThrown);
-                alert("Logout failed. Please try again.");
+                if (jqXHR.status === 401) {
+                    // If the user is already logged out, redirect to login page
+                    window.location.replace("login.html");
+                } else {
+                    alert("Logout failed. Please try again.");
+                }
             }
         });
     });
