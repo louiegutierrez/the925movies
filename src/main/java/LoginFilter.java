@@ -48,14 +48,14 @@ public class LoginFilter implements Filter {
         boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
 
         if (isLoggedIn) {
-            // Check if the user is trying to access dashboard.html
-            boolean isDashboardRequest = requestURI.endsWith("dashboard.html");
+            // Check if the user is trying to access _dashboard.html
+            boolean isDashboardRequest = requestURI.endsWith("_dashboard.html");
 
             if (isDashboardRequest) {
                 // Check if the user is an employee
                 String userRole = (String) session.getAttribute("role");
                 if ("employee".equals(userRole)) {
-                    // Allow access to dashboard.html for employees
+                    // Allow access to _dashboard.html for employees
                     chain.doFilter(request, response);
                 } else {
                     // Redirect non-employees to browse.html

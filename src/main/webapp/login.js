@@ -2,7 +2,7 @@ function handleLoginResult(resultData) {
     console.log("handle login response", resultData);
 
     if (resultData["status"] === "success") {
-        let redirectUrl = resultData["role"] === "employee" ? "dashboard.html" : "browse.html";
+        let redirectUrl = resultData["role"] === "employee" ? "_dashboard.html" : "browse.html";
         alert(`Logged in successfully as ${resultData["role"]}`);
         window.location.replace(redirectUrl);
     } else {
