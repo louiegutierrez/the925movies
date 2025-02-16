@@ -1,7 +1,4 @@
 import org.w3c.dom.*;
-
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 import javax.xml.parsers.*;
 import java.io.File;
 import java.io.FileWriter;
@@ -12,17 +9,20 @@ import java.util.Map;
 
 public class DOMDataImporter {
 
-    // In-memory caches (Optimization 1)
-    // For movies: key = "title-year-director", value = movie id
-    private final static Map<String, String> movieCache = new HashMap<>();
-    // For genres: key = genre name, value = genre id
-    private final static Map<String, Integer> genreCache = new HashMap<>();
-    // For stars: key = star name, value = star id
-    private final static Map<String, String> starCache = new HashMap<>();
-    // For stars_in_movies: key = starId + "_" + movieId, to avoid duplicate insertions
-    private final static Map<String, Boolean> starsInMoviesCache = new HashMap<>();
+    // -----------------------------------------------------------------------------------
+    // CACHES & COUNTERS
+    // -----------------------------------------------------------------------------------
 
-    // Counters for logging and summary
+    // For movies: key = "title-year-director", value = movie id
+    private static final Map<String, String> movieCache = new HashMap<>();
+    // For genres: key = genre name, value = genre id
+    private static final Map<String, Integer> genreCache = new HashMap<>();
+    // For stars: key = star name, value = star id
+    private static final Map<String, String> starCache = new HashMap<>();
+    // For stars_in_movies: key = starId + "_" + movieId (to avoid duplicates)
+    private static final Map<String, Boolean> starsInMoviesCache = new HashMap<>();
+
+    // Summary counters
     private static int moviesAdded = 0;
     private static int genresAdded = 0;
     private static int starsAdded = 0;
@@ -31,51 +31,46 @@ public class DOMDataImporter {
     private static int discrepanciesCount = 0;
 
     // Detailed discrepancy counters
-    private static int inconsistentMoviesCount = 0;  // movies with missing required fields
-    private static int duplicateMoviesCount = 0;     // movies already in the database
-    private static int moviesWithNoStarsCount = 0;     // cast entries with missing star info
-    private static int moviesNotFoundCount = 0;        // movies referenced in casts not found
-    private static int duplicateStarsCount = 0;        // duplicate star records in actors file
-    private static int starsNotFoundCount = 0;         // stars referenced in casts not found
+    private static int inconsistentMoviesCount = 0;  // Movies missing required fields
+    private static int duplicateMoviesCount = 0;     // Movies already in DB
+    private static int duplicateStarsCount = 0;      // Stars already in DB
 
-    // Separate log files for each category
-    private static PrintWriter logInconsistentMovies;
-    private static PrintWriter logDuplicateMovies;
-    private static PrintWriter logMoviesWithNoStars;
-    private static PrintWriter logMoviesNotFound;
-    private static PrintWriter logDuplicateStars;
-    private static PrintWriter logStarsNotFound;
-    private static PrintWriter logSummary;
+    // Logs for each category
+    private static PrintWriter logInconsistentMovies; // Missing required fields
+    private static PrintWriter logDuplicateMovies;    // Duplicate movies
+    private static PrintWriter logDuplicateStars;     // Duplicate stars
+    private static PrintWriter logSummary;            // Overall summary
 
-    // Database connection (adjust URL, user, and password as needed)
+    // Database connection
     private static Connection connection;
+
+    // -----------------------------------------------------------------------------------
+    // MAIN METHOD
+    // -----------------------------------------------------------------------------------
 
     public static void main(String[] args) {
         try {
-            // Initialize individual log files
+            // Initialize log files
             logInconsistentMovies = new PrintWriter(new FileWriter("inconsistent_movies.txt", false));
             logDuplicateMovies = new PrintWriter(new FileWriter("duplicate_movies.txt", false));
-            logMoviesWithNoStars = new PrintWriter(new FileWriter("movies_with_no_stars.txt", false));
-            logMoviesNotFound = new PrintWriter(new FileWriter("movies_not_found.txt", false));
             logDuplicateStars = new PrintWriter(new FileWriter("duplicate_stars.txt", false));
-            logStarsNotFound = new PrintWriter(new FileWriter("stars_not_found.txt", false));
             logSummary = new PrintWriter(new FileWriter("dom_import_summary.txt", false));
 
-            // Connect to the database
+            // Connect to DB (adjust credentials)
             String url = "jdbc:mysql://localhost:3306/moviedb?useUnicode=true&characterEncoding=ISO-8859-1";
             String user = "mytestuser";
             String password = "My6$Password";
             connection = DriverManager.getConnection(url, user, password);
 
-            // Pre-load caches from DB (Optimization 1)
+            // Preload caches
             loadCaches();
 
-            // Parse XML files using DOM
-            parseMovies();
-            parseActors();
-            parseCasts();
+            // Parse XML files
+            parseMovies("mains243.xml");
+            parseActors("actors63.xml");
+            parseCasts("casts124.xml");
 
-            // Write summary to logSummary
+            // Write summary
             logSummary.println("=== DOM Import Summary ===");
             logSummary.println("Movies Added: " + moviesAdded);
             logSummary.println("  Inconsistent Movies: " + inconsistentMoviesCount);
@@ -85,22 +80,17 @@ public class DOMDataImporter {
             logSummary.println("  Duplicate Stars: " + duplicateStarsCount);
             logSummary.println("Stars_in_Movies Added: " + starsInMoviesAdded);
             logSummary.println("Genres_in_Movies Added: " + genresInMoviesAdded);
-            logSummary.println("Movies with No Stars (in cast file): " + moviesWithNoStarsCount);
-            logSummary.println("Movies Not Found (in cast file): " + moviesNotFoundCount);
-            logSummary.println("Stars Not Found (in cast file): " + starsNotFoundCount);
             logSummary.println("Total Discrepancies: " + discrepanciesCount);
             logSummary.close();
 
-            // Close all log files
+            // Close other logs
             logInconsistentMovies.close();
             logDuplicateMovies.close();
-            logMoviesWithNoStars.close();
-            logMoviesNotFound.close();
             logDuplicateStars.close();
-            logStarsNotFound.close();
 
             connection.close();
-            System.out.println("DOM import completed. See the log files for details.");
+            System.out.println("DOM import completed. See log files for details.");
+
         } catch (Exception e) {
             e.printStackTrace();
             if (logSummary != null) {
@@ -110,11 +100,14 @@ public class DOMDataImporter {
         }
     }
 
-    // Pre-load caches from the database
+    // -----------------------------------------------------------------------------------
+    // LOAD CACHES
+    // -----------------------------------------------------------------------------------
+
     private static void loadCaches() throws SQLException {
         Statement stmt = connection.createStatement();
 
-        // Load movies into movieCache (key: title-year-director)
+        // Load movies
         ResultSet rs = stmt.executeQuery("SELECT id, title, year, director FROM movies");
         while (rs.next()) {
             String key = rs.getString("title").trim() + "-" + rs.getInt("year") + "-" + rs.getString("director").trim();
@@ -125,7 +118,7 @@ public class DOMDataImporter {
         // Load genres
         rs = stmt.executeQuery("SELECT id, name FROM genres");
         while (rs.next()) {
-            genreCache.put(rs.getString("name").trim(), Integer.valueOf(rs.getInt("id")));
+            genreCache.put(rs.getString("name").trim(), rs.getInt("id"));
         }
         rs.close();
 
@@ -139,23 +132,29 @@ public class DOMDataImporter {
         stmt.close();
     }
 
-    // Parse mains243.xml: Insert movies and their genres.
-    private static void parseMovies() {
+    // -----------------------------------------------------------------------------------
+    // PARSE MOVIES
+    // -----------------------------------------------------------------------------------
+
+    private static void parseMovies(String filename) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // (If needed, set encoding: factory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);)
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new File("mains243.xml"));
+            Document doc = builder.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
             NodeList directorfilmsList = doc.getElementsByTagName("directorfilms");
             for (int i = 0; i < directorfilmsList.getLength(); i++) {
                 Element directorfilmsElem = (Element) directorfilmsList.item(i);
+
+                // Get <dirname>
                 String director = "";
                 NodeList dirNameList = directorfilmsElem.getElementsByTagName("dirname");
                 if (dirNameList.getLength() > 0) {
                     director = dirNameList.item(0).getTextContent().trim();
                 }
+
+                // For each <film>
                 NodeList filmList = directorfilmsElem.getElementsByTagName("film");
                 for (int j = 0; j < filmList.getLength(); j++) {
                     Element filmElem = (Element) filmList.item(j);
@@ -171,56 +170,70 @@ public class DOMDataImporter {
                         filmYear = yearList.item(0).getTextContent().trim();
                     }
 
-                    // Validate required fields
+                    // Check required fields
                     if (filmTitle.isEmpty() || filmYear.isEmpty() || director.isEmpty()) {
+                        // Missing required fields => inconsistent
                         inconsistentMoviesCount++;
                         discrepanciesCount++;
-                        logInconsistentMovies.println("Inconsistent movie info. Title: " + filmTitle +
-                                ", Year: " + filmYear + ", Director: " + director);
+                        logInconsistentMovies.println(
+                                "Missing fields for movie. Title='" + filmTitle + "', Year='" + filmYear + "', Director='" + director + "'"
+                        );
                         continue;
                     }
 
+                    // Build composite key
                     String key = filmTitle + "-" + filmYear + "-" + director;
                     if (movieCache.containsKey(key)) {
+                        // Duplicate movie
                         duplicateMoviesCount++;
                         logDuplicateMovies.println("Duplicate movie: " + filmTitle + " (" + filmYear + ", " + director + ")");
                         continue;
                     }
 
-                    // Insert movie
-                    String newMovieId = "tt" + (movieCache.size() + 1);
+                    // Insert new movie
+                    String newMovieId = "tt" + String.format("%07d", movieCache.size() + 1);
+
+                    // Generate random price
+                    float randomPrice = generateRandomPrice(5f, 200f);
+
                     PreparedStatement ps = connection.prepareStatement(
-                            "INSERT INTO movies(id, title, year, director) VALUES(?, ?, ?, ?)");
+                            "INSERT INTO movies(id, title, year, director, price) VALUES(?, ?, ?, ?, ?)"
+                    );
                     ps.setString(1, newMovieId);
                     ps.setString(2, filmTitle);
                     try {
                         ps.setInt(3, Integer.parseInt(filmYear));
                     } catch (NumberFormatException nfe) {
+                        // If year is invalid, treat as null
                         discrepanciesCount++;
-                        logInconsistentMovies.println("Invalid year for film: " + filmTitle + " Year: " + filmYear);
+                        logInconsistentMovies.println("Invalid year for film: " + filmTitle + " => " + filmYear);
                         ps.setNull(3, Types.INTEGER);
                     }
                     ps.setString(4, director);
+                    ps.setFloat(5, randomPrice);
                     ps.executeUpdate();
                     ps.close();
 
                     movieCache.put(key, newMovieId);
                     moviesAdded++;
 
-                    // Process genres from <cats>
+                    // Insert genres from <cats>
                     NodeList catsList = filmElem.getElementsByTagName("cats");
                     if (catsList.getLength() > 0) {
                         Element catsElem = (Element) catsList.item(0);
                         NodeList catList = catsElem.getElementsByTagName("cat");
                         for (int k = 0; k < catList.getLength(); k++) {
-                            String genre = catList.item(k).getTextContent().trim();
-                            if (genre.isEmpty())
+                            String genreName = catList.item(k).getTextContent().trim();
+                            if (genreName.isEmpty()) {
                                 continue;
+                            }
                             int genreId;
-                            if (!genreCache.containsKey(genre)) {
+                            if (!genreCache.containsKey(genreName)) {
+                                // Insert new genre
                                 PreparedStatement psGenre = connection.prepareStatement(
-                                        "INSERT INTO genres(name) VALUES(?)", Statement.RETURN_GENERATED_KEYS);
-                                psGenre.setString(1, genre);
+                                        "INSERT INTO genres(name) VALUES(?)", Statement.RETURN_GENERATED_KEYS
+                                );
+                                psGenre.setString(1, genreName);
                                 psGenre.executeUpdate();
                                 ResultSet rs = psGenre.getGeneratedKeys();
                                 if (rs.next()) {
@@ -231,18 +244,20 @@ public class DOMDataImporter {
                                 rs.close();
                                 psGenre.close();
                                 if (genreId != -1) {
-                                    genreCache.put(genre, Integer.valueOf(genreId));
+                                    genreCache.put(genreName, genreId);
                                     genresAdded++;
                                 } else {
                                     discrepanciesCount++;
-                                    // Log under general discrepancies if desired (or skip)
+                                    // We skip if we couldn't insert
                                     continue;
                                 }
                             } else {
-                                genreId = genreCache.get(genre);
+                                genreId = genreCache.get(genreName);
                             }
+                            // Insert into genres_in_movies
                             PreparedStatement psGIM = connection.prepareStatement(
-                                    "INSERT INTO genres_in_movies(genreId, movieId) VALUES(?, ?)");
+                                    "INSERT INTO genres_in_movies(genreId, movieId) VALUES(?, ?)"
+                            );
                             psGIM.setInt(1, genreId);
                             psGIM.setString(2, newMovieId);
                             psGIM.executeUpdate();
@@ -254,17 +269,19 @@ public class DOMDataImporter {
             }
         } catch (Exception e) {
             discrepanciesCount++;
-            logInconsistentMovies.println("Error parsing movies: " + e.getMessage());
+            logInconsistentMovies.println("Error parsing '" + filename + "': " + e.getMessage());
         }
     }
 
-    // Parse actors63.xml: Insert stars.
-    private static void parseActors() {
+    // -----------------------------------------------------------------------------------
+    // PARSE ACTORS
+    // -----------------------------------------------------------------------------------
+
+    private static void parseActors(String filename) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Optionally set encoding if needed: factory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new File("actors63.xml"));
+            Document doc = builder.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
             NodeList actorList = doc.getElementsByTagName("actor");
@@ -282,19 +299,25 @@ public class DOMDataImporter {
                     birthYear = dobList.item(0).getTextContent().trim();
                 }
 
+                // If stagename is missing => treat as missing required field
                 if (starName.isEmpty()) {
                     discrepanciesCount++;
-                    logInconsistentMovies.println("Actor with missing stagename.");
+                    logInconsistentMovies.println("Actor with missing stagename (required field).");
                     continue;
                 }
+
+                // Check if star is already known => duplicate star
                 if (starCache.containsKey(starName)) {
                     duplicateStarsCount++;
                     logDuplicateStars.println("Duplicate star: " + starName);
                     continue;
                 }
-                String newStarId = "nm" + (starCache.size() + 1);
+
+                // Insert new star
+                String newStarId = "nm" + String.format("%07d", starCache.size() + 1);
                 PreparedStatement ps = connection.prepareStatement(
-                        "INSERT INTO stars(id, name, birthYear) VALUES(?, ?, ?)");
+                        "INSERT INTO stars(id, name, birthYear) VALUES(?, ?, ?)"
+                );
                 ps.setString(1, newStarId);
                 ps.setString(2, starName);
                 if (birthYear.isEmpty()) {
@@ -304,33 +327,38 @@ public class DOMDataImporter {
                         ps.setInt(3, Integer.parseInt(birthYear));
                     } catch (NumberFormatException nfe) {
                         discrepanciesCount++;
-                        logInconsistentMovies.println("Invalid birthYear for " + starName + ": " + birthYear);
+                        logInconsistentMovies.println("Invalid birthYear for star '" + starName + "': " + birthYear);
                         ps.setNull(3, Types.INTEGER);
                     }
                 }
                 ps.executeUpdate();
                 ps.close();
+
                 starCache.put(starName, newStarId);
                 starsAdded++;
             }
         } catch (Exception e) {
             discrepanciesCount++;
-            logInconsistentMovies.println("Error parsing actors: " + e.getMessage());
+            logInconsistentMovies.println("Error parsing '" + filename + "': " + e.getMessage());
         }
     }
 
-    // Parse casts124.xml: Insert stars_in_movies connections.
-    private static void parseCasts() {
+    // -----------------------------------------------------------------------------------
+    // PARSE CASTS
+    // -----------------------------------------------------------------------------------
+
+    private static void parseCasts(String filename) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Optionally set encoding if needed
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new File("casts124.xml"));
+            Document doc = builder.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
             NodeList mList = doc.getElementsByTagName("m");
             for (int i = 0; i < mList.getLength(); i++) {
                 Element mElem = (Element) mList.item(i);
+
+                // Extract film id <f> and actor name <a>
                 String filmId = "";
                 String actorName = "";
 
@@ -343,49 +371,54 @@ public class DOMDataImporter {
                     actorName = aList.item(0).getTextContent().trim();
                 }
 
+                // If missing filmId or actorName => skip silently (no extra logs)
                 if (filmId.isEmpty() || actorName.isEmpty()) {
-                    moviesWithNoStarsCount++;
-                    discrepanciesCount++;
-                    logMoviesWithNoStars.println("Missing film id or actor name in cast element.");
                     continue;
                 }
 
-                // For this example, we assume that the film id from casts124.xml corresponds directly to the id in movies.
+                // Must exist in movieCache + starCache to proceed
                 if (!movieCache.containsValue(filmId)) {
-                    moviesNotFoundCount++;
-                    discrepanciesCount++;
-                    logMoviesNotFound.println("Movie id " + filmId + " not found for cast.");
+                    // The cast references a movie id not in the DB => skip
                     continue;
                 }
                 if (!starCache.containsKey(actorName)) {
-                    starsNotFoundCount++;
-                    discrepanciesCount++;
-                    logStarsNotFound.println("Star " + actorName + " not found for cast.");
+                    // The cast references a star name not in the DB => skip
                     continue;
                 }
+
                 String starId = starCache.get(actorName);
                 String key = starId + "_" + filmId;
-                if (starsInMoviesCache.containsKey(key)) {
-                    // Duplicate cast entry – ignore.
-                    continue;
-                }
-                try {
+
+                // If not already linked, link star -> movie
+                if (!starsInMoviesCache.containsKey(key)) {
                     PreparedStatement ps = connection.prepareStatement(
-                            "INSERT INTO stars_in_movies(starId, movieId) VALUES(?, ?)");
+                            "INSERT INTO stars_in_movies(starId, movieId) VALUES(?, ?)"
+                    );
                     ps.setString(1, starId);
                     ps.setString(2, filmId);
                     ps.executeUpdate();
                     ps.close();
-                    starsInMoviesCache.put(key, Boolean.valueOf(true));
+                    starsInMoviesCache.put(key, true);
                     starsInMoviesAdded++;
-                } catch (Exception e) {
-                    discrepanciesCount++;
-                    logInconsistentMovies.println("Error inserting stars_in_movies: " + e.getMessage());
                 }
             }
         } catch (Exception e) {
             discrepanciesCount++;
-            logInconsistentMovies.println("Error parsing casts: " + e.getMessage());
+            logInconsistentMovies.println("Error parsing '" + filename + "': " + e.getMessage());
         }
+    }
+
+    // -----------------------------------------------------------------------------------
+    // HELPER: RANDOM PRICE
+    // -----------------------------------------------------------------------------------
+
+    /**
+     * Generates a random float between min and max, inclusive of min, exclusive of max,
+     * rounded to 2 decimal places.
+     */
+    private static float generateRandomPrice(float min, float max) {
+        float raw = (float) (Math.random() * (max - min) + min);  // e.g. [5, 200)
+        // Round to 2 decimals
+        return (float) (Math.round(raw * 100.0) / 100.0);
     }
 }
