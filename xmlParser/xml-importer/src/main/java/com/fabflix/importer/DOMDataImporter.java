@@ -89,19 +89,19 @@ public class DOMDataImporter {
 
             // Process each XML file individually so errors in one don't stop others.
             try {
-                parseMovies("mains243.xml", logInconsMains);
+                parseMovies("standford-movies/mains243.xml", logInconsMains);
             } catch (Exception ex) {
                 discrepanciesCount++;
                 logInconsMains.println("Error parsing mains243.xml: " + ex.getMessage());
             }
             try {
-                parseActors("actors63.xml", logInconsActors);
+                parseActors("standford-movies/actors63.xml", logInconsActors);
             } catch (Exception ex) {
                 discrepanciesCount++;
                 logInconsActors.println("Error parsing actors63.xml: " + ex.getMessage());
             }
             try {
-                parseCasts("casts124.xml", logInconsCasts);
+                parseCasts("standford-movies/casts124.xml", logInconsCasts);
             } catch (Exception ex) {
                 discrepanciesCount++;
                 logInconsCasts.println("Error parsing casts124.xml: " + ex.getMessage());
