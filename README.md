@@ -16,6 +16,10 @@
 - Handled encrypted passwords
 - Dashboard backend
 
+
+## SUBSTRING MATCHING:
+- Implemented in SearchingServlet with % search_term % where it'll search for where it appears anywhere in the string
+
 #### FILES W/ PreparedStatement
 - CartServlet (shopping cart)
 - FormServlet (Login Form)
