@@ -60,7 +60,7 @@ public class InsertStarServlet extends HttpServlet {
 
             response.setContentType("application/json");
             PrintWriter out = response.getWriter();
-            out.println("{\"message\":\"Star added successfully!\"}");
+            out.println("{\"message\":\"Star added successfully with ID " + newStarId + "\"}");
         } catch (SQLException e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
