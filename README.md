@@ -1,6 +1,7 @@
 # CS122B PROJECT 3
 ## BY LEONARDO GUTIERREZ && MARTIN KIMBALL
 
+### HOSTED ON: https://www.the925movies.shop:8443/The925-1/
 #### VIDEO URL : https://www.youtube.com/watch?v=nhcdHmuJ6-U
 
 #### MARTIN CONTRIBUTIONS:
@@ -47,3 +48,12 @@ Duplicate Stars: 857
 Stars_in_Movies Added: 28137
 Genres_in_Movies Added: 9809
 Total Discrepancies: 26220
+
+- detailed reports after running can be found in log files:
+  - xmlParser/xml-importer/dom_import_summary.txt
+  - xmlParser/xml-importer/duplicate_movies.txt
+  - xmlParser/xml-importer/duplicate_stars.txt
+  - xmlParser/xml-importer/inconsistent_actors63.txt
+  - xmlParser/xml-importer/inconsistent_casts124.txt
+  - xmlParser/xml-importer/inconsistent_mains243.txt
+  - xmlParser/xml-importer/inconsistent_movies.txt
