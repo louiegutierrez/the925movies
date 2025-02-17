@@ -1,20 +1,21 @@
-# CS122B PROJECT 2
+# CS122B PROJECT 3
 ## BY LEONARDO GUTIERREZ && MARTIN KIMBALL
 
-#### VIDEO URL : https://youtu.be/OurjAIgL4AU
+#### VIDEO URL : [INSERT URL HERE]
 
 #### MARTIN CONTRIBUTIONS:
-- Majority Frontend Contributions
-- Added Cart, Confirmation, Checkout, Login, Logout Files
-- Implemented Styling for multiple pages
-- LoginFilter
+- Frontend for dashboard
+- Updated LoginFilter
+- Updated Login to include employee/user
+- Recaptcha implementation
+
 
 
 #### LEONARDO CONTRIBUTIONS:
-- Majority Backend Contributions
-- Added/Remodeled Servlets for HTML pages
-- Implemented Nav Bar Styling and Implementation of Search
-- Browsing Implementation
+- Majority of XML Parsing
+- Added https support
+- Custom domain implementation
+- Handled encrpyted passwords
+- Dashboard backend
 
-## SUBSTRING MATCHING:
-- Implemented in SearchingServlet with % search_term % where it'll search for where it appears anywhere in the string
+
