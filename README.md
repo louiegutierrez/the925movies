@@ -21,3 +21,14 @@
 - Batch inserts to keep sql inserts at a minimum and inserting at large amounts
 
 
+#### XML REPORT:
+=== DOM Import Summary ===
+Movies Added: 12058
+Inconsistent Movies (missing required fields): 13
+Duplicate Movies: 28
+Genres Added: 123
+Stars Added: 6006
+Duplicate Stars: 857
+Stars_in_Movies Added: 28137
+Genres_in_Movies Added: 9809
+Total Discrepancies: 26220
