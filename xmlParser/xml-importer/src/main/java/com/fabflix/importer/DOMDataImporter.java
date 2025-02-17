@@ -11,17 +11,14 @@ import java.util.Map;
 
 public class DOMDataImporter {
 
-    // --------------------------
-    // Caches and Counters
-    // --------------------------
-    // For movies: composite key "title-year-director" → movie id
-    private static final Map<String, String> movieCache = new HashMap<>();
+    // For movies: composite key "title-year-director" → movie id (director stored as-is)
+    private static Map<String, String> movieCache = new HashMap<>();
     // For genres: genre name → genre id
-    private static final Map<String, Integer> genreCache = new HashMap<>();
+    private static Map<String, Integer> genreCache = new HashMap<>();
     // For stars: star name → star id
-    private static final Map<String, String> starCache = new HashMap<>();
+    private static Map<String, String> starCache = new HashMap<>();
     // For stars_in_movies: "starId_movieId" to avoid duplicate links
-    private static final Map<String, Boolean> starsInMoviesCache = new HashMap<>();
+    private static Map<String, Boolean> starsInMoviesCache = new HashMap<>();
 
     // Summary counters
     private static int moviesAdded = 0;
@@ -36,10 +33,15 @@ public class DOMDataImporter {
     private static int duplicateMoviesCount = 0;    // duplicate movies
     private static int duplicateStarsCount = 0;     // duplicate stars
 
-    // Log files for discrepancies
-    private static PrintWriter logInconsistentMovies;
+    // Log files for duplicates (common across files)
     private static PrintWriter logDuplicateMovies;
     private static PrintWriter logDuplicateStars;
+
+    // Separate log files for inconsistencies for each XML file:
+    private static PrintWriter logInconsMains;   // for mains243.xml
+    private static PrintWriter logInconsActors;  // for actors63.xml
+    private static PrintWriter logInconsCasts;   // for casts124.xml
+    // Overall summary log:
     private static PrintWriter logSummary;
 
     // Database connection
@@ -49,16 +51,18 @@ public class DOMDataImporter {
     // Custom ErrorHandler to log errors and continue
     // --------------------------
     private static class MyErrorHandler implements ErrorHandler {
+        private PrintWriter log;
+        public MyErrorHandler(PrintWriter log) {
+            this.log = log;
+        }
         public void warning(SAXParseException exception) {
-            logInconsistentMovies.println("WARNING: " + exception.getMessage());
+            log.println("WARNING: " + exception.getMessage());
         }
         public void error(SAXParseException exception) {
-            logInconsistentMovies.println("ERROR: " + exception.getMessage());
+            log.println("ERROR: " + exception.getMessage());
         }
         public void fatalError(SAXParseException exception) {
-            logInconsistentMovies.println("FATAL: " + exception.getMessage());
-            // Do not throw exception in order to continue parsing.
-            // (Note: This behavior is non-standard and depends on your parser.)
+            log.println("FATAL: " + exception.getMessage());
         }
     }
 
@@ -67,8 +71,10 @@ public class DOMDataImporter {
     // --------------------------
     public static void main(String[] args) {
         try {
-            // Initialize logs (each created in the current working directory)
-            logInconsistentMovies = new PrintWriter(new FileWriter("inconsistent_movies.txt", false));
+            // Initialize logs for each file and overall summary
+            logInconsMains = new PrintWriter(new FileWriter("inconsistent_mains243.txt", false));
+            logInconsActors = new PrintWriter(new FileWriter("inconsistent_actors63.txt", false));
+            logInconsCasts = new PrintWriter(new FileWriter("inconsistent_casts124.txt", false));
             logDuplicateMovies = new PrintWriter(new FileWriter("duplicate_movies.txt", false));
             logDuplicateStars = new PrintWriter(new FileWriter("duplicate_stars.txt", false));
             logSummary = new PrintWriter(new FileWriter("dom_import_summary.txt", false));
@@ -82,27 +88,27 @@ public class DOMDataImporter {
             // Pre-load caches from DB
             loadCaches();
 
-            // Process each XML file individually so errors in one don't stop others
+            // Process each XML file individually so errors in one don't stop others.
             try {
-                parseMovies("mains243.xml");
+                parseMovies("mains243.xml", logInconsMains);
             } catch (Exception ex) {
                 discrepanciesCount++;
-                logInconsistentMovies.println("Error parsing mains243.xml: " + ex.getMessage());
+                logInconsMains.println("Error parsing mains243.xml: " + ex.getMessage());
             }
             try {
-                parseActors("actors63.xml");
+                parseActors("actors63.xml", logInconsActors);
             } catch (Exception ex) {
                 discrepanciesCount++;
-                logInconsistentMovies.println("Error parsing actors63.xml: " + ex.getMessage());
+                logInconsActors.println("Error parsing actors63.xml: " + ex.getMessage());
             }
             try {
-                parseCasts("casts124.xml");
+                parseCasts("casts124.xml", logInconsCasts);
             } catch (Exception ex) {
                 discrepanciesCount++;
-                logInconsistentMovies.println("Error parsing casts124.xml: " + ex.getMessage());
+                logInconsCasts.println("Error parsing casts124.xml: " + ex.getMessage());
             }
 
-            // Write summary log
+            // Write overall summary log
             logSummary.println("=== DOM Import Summary ===");
             logSummary.println("Movies Added: " + moviesAdded);
             logSummary.println("  Inconsistent Movies (missing required fields): " + inconsistentMoviesCount);
@@ -115,8 +121,10 @@ public class DOMDataImporter {
             logSummary.println("Total Discrepancies: " + discrepanciesCount);
             logSummary.close();
 
-            // Close logs and connection
-            logInconsistentMovies.close();
+            // Close individual logs and connection
+            logInconsMains.close();
+            logInconsActors.close();
+            logInconsCasts.close();
             logDuplicateMovies.close();
             logDuplicateStars.close();
             connection.close();
@@ -136,7 +144,7 @@ public class DOMDataImporter {
     private static void loadCaches() throws SQLException {
         Statement stmt = connection.createStatement();
 
-        // Load movies using composite key: title-year-director
+        // Load movies using composite key: title-year-director (director stored as-is)
         ResultSet rs = stmt.executeQuery("SELECT id, title, year, director FROM movies");
         while (rs.next()) {
             String key = rs.getString("title").trim() + "-" + rs.getInt("year") + "-" + rs.getString("director").trim();
@@ -164,13 +172,13 @@ public class DOMDataImporter {
     // --------------------------
     // Parse mains243.xml (Movies & Genres)
     // --------------------------
-    private static void parseMovies(String filename) {
+    private static void parseMovies(String filename, PrintWriter log) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Enable continuing after fatal errors (Xerces-specific)
+            // Continue after fatal errors (Xerces-specific)
             factory.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(new MyErrorHandler());
+            builder.setErrorHandler(new MyErrorHandler(log));
             Document doc = builder.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
@@ -202,8 +210,16 @@ public class DOMDataImporter {
                     if (filmTitle.isEmpty() || filmYear.isEmpty() || director.isEmpty()) {
                         inconsistentMoviesCount++;
                         discrepanciesCount++;
-                        logInconsistentMovies.println("Inconsistent movie info. Title='" + filmTitle +
+                        log.println("Inconsistent movie info. Title='" + filmTitle +
                                 "', Year='" + filmYear + "', Director='" + director + "'");
+                        continue;
+                    }
+
+                    try {
+                        Integer.parseInt(filmYear);
+                    } catch (NumberFormatException nfe) {
+                        discrepanciesCount++;
+                        log.println("Invalid year for film: " + filmTitle + " => " + filmYear);
                         continue;
                     }
 
@@ -223,13 +239,7 @@ public class DOMDataImporter {
                     );
                     ps.setString(1, newMovieId);
                     ps.setString(2, filmTitle);
-                    try {
-                        ps.setInt(3, Integer.parseInt(filmYear));
-                    } catch (NumberFormatException nfe) {
-                        discrepanciesCount++;
-                        logInconsistentMovies.println("Invalid year for film: " + filmTitle + " => " + filmYear);
-                        ps.setNull(3, Types.INTEGER);
-                    }
+                    ps.setInt(3, Integer.parseInt(filmYear));
                     ps.setString(4, director);
                     ps.setFloat(5, randomPrice);
                     ps.executeUpdate();
@@ -285,20 +295,19 @@ public class DOMDataImporter {
             }
         } catch (Exception e) {
             discrepanciesCount++;
-            logInconsistentMovies.println("Error parsing " + filename + ": " + e.getMessage());
+            log.println("Error parsing " + filename + ": " + e.getMessage());
         }
     }
 
     // --------------------------
     // Parse actors63.xml (Stars)
     // --------------------------
-    private static void parseActors(String filename) {
+    private static void parseActors(String filename, PrintWriter log) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Set lenient mode to continue after fatal errors
             factory.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(new MyErrorHandler());
+            builder.setErrorHandler(new MyErrorHandler(log));
             Document doc = builder.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
@@ -319,7 +328,7 @@ public class DOMDataImporter {
 
                 if (starName.isEmpty()) {
                     discrepanciesCount++;
-                    logInconsistentMovies.println("Actor missing stagename.");
+                    log.println("Actor missing stagename.");
                     continue;
                 }
                 if (starCache.containsKey(starName)) {
@@ -342,7 +351,7 @@ public class DOMDataImporter {
                             ps.setInt(3, Integer.parseInt(birthYear));
                         } catch (NumberFormatException nfe) {
                             discrepanciesCount++;
-                            logInconsistentMovies.println("Invalid birthYear for star '" + starName + "': " + birthYear);
+                            log.println("Invalid birthYear for star '" + starName + "': " + birthYear);
                             ps.setNull(3, Types.INTEGER);
                         }
                     }
@@ -357,32 +366,31 @@ public class DOMDataImporter {
             }
         } catch (Exception e) {
             discrepanciesCount++;
-            logInconsistentMovies.println("Error parsing " + filename + ": " + e.getMessage());
+            log.println("Error parsing " + filename + ": " + e.getMessage());
         }
     }
 
     // --------------------------
     // Parse casts124.xml (Stars_in_Movies)
     // For each <dirfilms> group, the director is given by the <is> element.
-    // For each <m> element, we try to find a matching movie by title and director.
+    // For each <m> element, we try to find a matching movie by title and director (exact match).
     // If no matching movie exists, we log a discrepancy and do not insert a new movie.
     // For each <m> element, if the star (by stagename) isn't in the stars table,
-    // insert the star (with a NULL birthYear) and update the starsAdded counter.
+    // we log an error and skip linking that cast record.
     // Then link the star to the movie in stars_in_movies.
     // --------------------------
-    private static void parseCasts(String filename) {
+    private static void parseCasts(String filename, PrintWriter log) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(new MyErrorHandler());
+            builder.setErrorHandler(new MyErrorHandler(log));
             Document doc = builder.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
             NodeList dirfilmsList = doc.getElementsByTagName("dirfilms");
             for (int i = 0; i < dirfilmsList.getLength(); i++) {
                 Element dirfilmsElem = (Element) dirfilmsList.item(i);
-                // Get director from <is>
                 String director = "";
                 NodeList isList = dirfilmsElem.getElementsByTagName("is");
                 if (isList.getLength() > 0) {
@@ -407,48 +415,27 @@ public class DOMDataImporter {
                             starName = aList.item(0).getTextContent().trim();
                         }
 
-                        // Look for a movie in our cache that matches movieTitle and director.
-                        // Since the casts file does not provide a year, we search keys ending with "-" + director.
+                        // Look for a movie in our cache that matches movieTitle and director exactly.
+                        String compositeKeyPrefix = movieTitle + "-"; // We'll check keys that start with movieTitle and contain director after dash
                         String movieId = null;
                         for (Map.Entry<String, String> entry : movieCache.entrySet()) {
                             String key = entry.getKey(); // format: title-year-director
-                            if (key.startsWith(movieTitle + "-") && key.endsWith("-" + director)) {
+                            if (key.startsWith(compositeKeyPrefix) && key.endsWith(director)) {
                                 movieId = entry.getValue();
                                 break;
                             }
                         }
                         if (movieId == null) {
                             discrepanciesCount++;
-                            logInconsistentMovies.println("Cast record references non-existent movie: Title='" + movieTitle + "', Director='" + director + "'");
+                            log.println("Cast record references non-existent movie: Title='" + movieTitle + "', Director='" + director + "'");
                             continue;
                         }
 
-                        // Process star linkage: if star not found, insert it (with NULL birthYear)
+                        // For stars: if the star isn't in the cache, log an error and skip this cast record.
                         if (!starCache.containsKey(starName)) {
-                            String newStarId = "nm" + String.format("%07d", starCache.size() + 1);
-                            try {
-                                PreparedStatement psStar = connection.prepareStatement(
-                                        "INSERT INTO stars(id, name, birthYear) VALUES(?, ?, ?)"
-                                );
-                                psStar.setString(1, newStarId);
-                                psStar.setString(2, starName);
-                                psStar.setNull(3, Types.INTEGER);
-                                psStar.executeUpdate();
-                                psStar.close();
-                                starCache.put(starName, newStarId);
-                                starsAdded++;
-                            } catch (SQLException ex) {
-                                duplicateStarsCount++;
-                                logDuplicateStars.println("Duplicate star on insert (casts file): " + starName);
-                                PreparedStatement psSelect = connection.prepareStatement("SELECT id FROM stars WHERE name = ?");
-                                psSelect.setString(1, starName);
-                                ResultSet rs = psSelect.executeQuery();
-                                if (rs.next()) {
-                                    starCache.put(starName, rs.getString("id"));
-                                }
-                                rs.close();
-                                psSelect.close();
-                            }
+                            discrepanciesCount++;
+                            log.println("Cast record references non-existent star: " + starName + " for movie '" + movieTitle + "'");
+                            continue;
                         }
                         String starId = starCache.get(starName);
                         String linkKey = starId + "_" + movieId;
@@ -468,13 +455,10 @@ public class DOMDataImporter {
             }
         } catch (Exception e) {
             discrepanciesCount++;
-            logInconsistentMovies.println("Error parsing " + filename + ": " + e.getMessage());
+            log.println("Error parsing " + filename + ": " + e.getMessage());
         }
     }
 
-    // --------------------------
-    // Helper: Generate random price between min and max (rounded to 2 decimals)
-    // --------------------------
     private static float generateRandomPrice(float min, float max) {
         float raw = (float) (Math.random() * (max - min) + min);
         return (float) (Math.round(raw * 100.0) / 100.0);
