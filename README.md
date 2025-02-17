@@ -16,6 +16,17 @@
 - Handled encrypted passwords
 - Dashboard backend
 
+#### FILES W/ PreparedStatement
+- CartServlet (shopping cart)
+- FormServlet (Login Form)
+- GenreServlet (Getting Genres)
+- GetMetadataServlet (MetaData)
+- InsertStarServlet (Inserting New Star)
+- PaymentServlet (Making Payment to Sales)
+- SearchingServlet (Main Searching)
+- SingleMovieServlet (Getting Single Movie Info)
+- SingleStarServlet (Getting Single Star info)
+
 #### XML SPEED OPTIMIZATIONS:
 - Caching database into a map to do one query per movie, genres, stars
 - Batch inserts to keep sql inserts at a minimum and inserting at large amounts
