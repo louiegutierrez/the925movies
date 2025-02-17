@@ -1,7 +1,7 @@
 # CS122B PROJECT 3
 ## BY LEONARDO GUTIERREZ && MARTIN KIMBALL
 
-#### VIDEO URL : [INSERT URL HERE]
+#### VIDEO URL : https://www.youtube.com/watch?v=nhcdHmuJ6-U
 
 #### MARTIN CONTRIBUTIONS:
 - Frontend for dashboard
