@@ -9,13 +9,15 @@
 - Updated Login to include employee/user
 - Recaptcha implementation
 
-
-
 #### LEONARDO CONTRIBUTIONS:
 - Majority of XML Parsing
 - Added https support
 - Custom domain implementation
-- Handled encrpyted passwords
+- Handled encrypted passwords
 - Dashboard backend
+
+#### XML SPEED OPTIMIZATIONS:
+- Caching database into a map to do one query per movie, genres, stars
+- Batch inserts to keep sql inserts at a minimum and inserting at large amounts
 
 
