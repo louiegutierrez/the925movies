@@ -68,6 +68,10 @@ proc: BEGIN
 
     INSERT INTO genres_in_movies(genreId, movieId) VALUES(newGenreId, newMovieId);
 
-    SELECT CONCAT("New movie added with id: ", newMovieId) AS message;
+    SELECT CONCAT(
+                   "New movie added with id: ", newMovieId,
+                   ", GENRE_ID: ", IF(existingGenreId IS NOT NULL, existingGenreId, newGenreId),
+                   ", STAR_ID: ", IF(existingStarId IS NOT NULL, existingStarId, newStarId)
+           ) AS message;
 END$$
 DELIMITER ;
