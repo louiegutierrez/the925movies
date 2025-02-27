@@ -9,12 +9,21 @@ $(document).ready(function () {
 });
 
 function getFormData() {
-    return {
-        title: $("input[name='title']").val(),
+    let titleInput = $("input[name='title']").val().trim();
+    let titleWords = titleInput.split(/\s+/).filter(word => word.length > 0); // Tokenize input
+
+    let formData = {
         year: $("input[name='year']").val(),
         director: $("input[name='director']").val(),
         star: $("input[name='star']").val()
     };
+
+    // Add each word as title_word1, title_word2, etc.
+    titleWords.forEach((word, index) => {
+        formData[`title_word${index + 1}`] = word;
+    });
+
+    return formData;
 }
 
 /*
@@ -23,18 +32,10 @@ function getFormData() {
 function handleLookup(query, doneCallback) {
     console.log("Autocomplete initiated with query:", query);
 
-    // Check cache first
-    let cachedData = sessionStorage.getItem(query);
-    if (cachedData) {
-        console.log("Using cached results");
-        doneCallback({ suggestions: JSON.parse(cachedData) });
-        return;
-    }
-
-    console.log("Sending AJAX request to backend");
-
-    let formData = getFormData();
+    let formData = getFormData(); // Tokenized query
     let queryString = $.param(formData);
+
+    console.log("Query sent to backend:", queryString);
 
     jQuery.ajax({
         method: "GET",
@@ -62,9 +63,6 @@ function handleLookupAjaxSuccess(data, query, doneCallback) {
     })).slice(0, 10); // Limit to 10 results
 
     console.log("Using suggestions:", suggestions);
-
-    // Cache results
-    sessionStorage.setItem(query, JSON.stringify(suggestions));
 
     doneCallback({ suggestions: suggestions });
 }

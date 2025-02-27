@@ -17,13 +17,14 @@
 <header>
     <nav class="navbar">
         <ul>
-            <li><a href="browse.html">Browse</a></li>
-            <li><a href="movie-list.html">Your Movie List</a></li>
+            <li><a href="browse.html" class="active">Browse</a></li>
             <li><a href="cart.html">Cart</a></li>
             <li><a href="login.html" id="logout"> Logout </a></li>
         </ul>
         <form id="searchForm" action="movie-list.html" method="GET">
-            <input type="text" name="title" placeholder="Title">
+            <input type="text" name="title" id="autocomplete"
+                   class="autocomplete-searchbox form-control"
+                   placeholder="Title"/>
             <input type="number" name="year" placeholder="Year">
             <input type="text" name="director" placeholder="Director">
             <input type="text" name="star" placeholder="Star's Name">
@@ -51,6 +52,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.4.11/jquery.autocomplete.min.js"></script>
 <script src="single-movie.js"></script>
 <script src="search.js"></script>
 <script src="cart.js"></script>
