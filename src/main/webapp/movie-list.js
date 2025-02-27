@@ -4,6 +4,19 @@ let currentSort = 0;
 
 function buildQueryURL() {
     let urlParams = new URLSearchParams(window.location.search);
+
+    // Tokenize title input
+    if (urlParams.has("title")) {
+        let title = urlParams.get("title").trim();
+        if (title.length > 0) {
+            urlParams.delete("title"); // Remove existing title parameter
+            let words = title.split(/\s+/); // Split title into words
+            words.forEach((word, index) => {
+                urlParams.append(`title_word${index + 1}`, word); // Append each word separately
+            });
+        }
+    }
+
     return "api/search?" + urlParams.toString();
 }
 
@@ -44,8 +57,12 @@ function handleSearchResult(resultData) {
         rowHTML += `<td><a href="single-movie.html?id=${m.movie_id}">${m.title}</a></td>`;
         rowHTML += `<td>${m.year}</td>`;
         rowHTML += `<td>${m.director}</td>`;
+        let genreName = m.three_genres.split(", ");
+        let genresHTML = genreName.map(genre_name => `<a href="movie-list.html?genre=${genre_name}">${genre_name}</a>`).join(", ");
+        rowHTML += `<td>${genresHTML}</td>`;
         let starNames = m.three_stars.split(", ");
-        let starsHTML = starNames.map(name => `<a href="movie-list.html?star=${name}">${name}</a>`).join(", ");
+        let starIds = m.three_star_ids.split(", ");
+        let starsHTML = starNames.map((name, j) => `<a href="single-star.html?id=${starIds[j]}">${name}</a>`).join(", ");
         rowHTML += `<td>${starsHTML}</td>`;
         rowHTML += `<td>${m.rating}</td>`;
         rowHTML += `<td><button class="addToCart" data-movie-id="${m.movie_id}">Add to Cart</button></td>`;
@@ -65,7 +82,6 @@ function fetchMovieList() {
         method: "GET",
         url: url,
         success: (resultData) => {
-            console.log(resultData);
             handleSearchResult(resultData);
             jQuery("#loadingIndicator").hide();
             jQuery("#movie_table").show();
