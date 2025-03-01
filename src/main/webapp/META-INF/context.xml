@@ -8,7 +8,7 @@
                 factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
                 maxTotal="100" maxIdle="30" maxWaitMillis="10000"
                 driverClassName="com.mysql.cj.jdbc.Driver"
-                url="jdbc:mysql://172.31.9.231:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
+                url="jdbc:mysql://18.188.150.190:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
                 username="mytestuser"
                 password="My6$Password"
         />
@@ -19,7 +19,7 @@
                 factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
                 maxTotal="100" maxIdle="30" maxWaitMillis="10000"
                 driverClassName="com.mysql.cj.jdbc.Driver"
-                url="jdbc:mysql://172.31.9.21:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
+                url="jdbc:mysql://18.222.164.10:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
                 username="mytestuser"
                 password="My6$Password"
         />
