@@ -2,11 +2,24 @@
 
 <Context>
         <Resource
-                name="jdbc/moviedb"
+                name="jdbc/moviedb_master"
                 auth="Container"
                 type="javax.sql.DataSource"
+                factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+                maxTotal="100" maxIdle="30" maxWaitMillis="10000"
                 driverClassName="com.mysql.cj.jdbc.Driver"
-                url="jdbc:mysql://localhost:3306/moviedb"
+                url="jdbc:mysql://172.31.9.231:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
+                username="mytestuser"
+                password="My6$Password"
+        />
+        <Resource
+                name="jdbc/moviedb_slave"
+                auth="Container"
+                type="javax.sql.DataSource"
+                factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+                maxTotal="100" maxIdle="30" maxWaitMillis="10000"
+                driverClassName="com.mysql.cj.jdbc.Driver"
+                url="jdbc:mysql://172.31.9.21:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
                 username="mytestuser"
                 password="My6$Password"
         />

@@ -24,7 +24,7 @@ public class CartServlet extends HttpServlet {
 
     public void init(ServletConfig config) {
         try {
-            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
+            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb_slave");
             System.out.println("Got cart datasource");
         } catch (NamingException e) {
             e.printStackTrace();
