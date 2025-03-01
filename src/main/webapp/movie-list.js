@@ -9,14 +9,13 @@ function buildQueryURL() {
     if (urlParams.has("title")) {
         let title = urlParams.get("title").trim();
         if (title.length > 0) {
-            urlParams.delete("title"); // Remove existing title parameter
-            let words = title.split(/\s+/); // Split title into words
+            urlParams.delete("title");
+            let words = title.split(/\s+/);
             words.forEach((word, index) => {
-                urlParams.append(`title_word${index + 1}`, word); // Append each word separately
+                urlParams.append(`title_word${index + 1}`, word);
             });
         }
     }
-
     return "api/search?" + urlParams.toString();
 }
 
@@ -74,6 +73,7 @@ function handleSearchResult(resultData) {
 function fetchMovieList() {
     let url = buildQueryURL();
 
+    // Show a loading spinner
     jQuery("#loadingIndicator").show();
     jQuery("#movie_table").hide();
 
@@ -83,6 +83,8 @@ function fetchMovieList() {
         url: url,
         success: (resultData) => {
             handleSearchResult(resultData);
+
+            // Hide spinner, show table
             jQuery("#loadingIndicator").hide();
             jQuery("#movie_table").show();
         },
@@ -92,6 +94,14 @@ function fetchMovieList() {
             jQuery("#movie_table").show();
         }
     });
+}
+
+function storeCurrentQueryInLocalStorage() {
+    // e.g. if the current browser URL is "movie-list.html?genre=Drama&page=2"
+    // we want to store "?genre=Drama&page=2"
+    let currentSearch = window.location.search;
+    localStorage.setItem("lastQueryString", currentSearch);
+    console.log("Storing lastQueryString =>", currentSearch);
 }
 
 function initializePage() {
@@ -115,10 +125,14 @@ function initializePage() {
         }
     }
     fetchMovieList();
+
+    // After fetching, store the final query in localStorage
+    storeCurrentQueryInLocalStorage();
 }
 
 jQuery(() => {
     initializePage();
+
     jQuery("#pageSizeSelect").change(function() {
         currentSize = parseInt(jQuery(this).val());
         currentPage = 1;
@@ -127,7 +141,9 @@ jQuery(() => {
         urlParams.set("page", currentPage);
         window.history.replaceState({}, "", "movie-list.html?" + urlParams.toString());
         fetchMovieList();
+        storeCurrentQueryInLocalStorage();
     });
+
     jQuery("#sortSelect").change(function() {
         currentSort = parseInt(jQuery(this).val());
         currentPage = 1;
@@ -136,7 +152,9 @@ jQuery(() => {
         urlParams.set("page", currentPage);
         window.history.replaceState({}, "", "movie-list.html?" + urlParams.toString());
         fetchMovieList();
+        storeCurrentQueryInLocalStorage();
     });
+
     jQuery("#prevButton").click(function() {
         if (currentPage > 1) {
             currentPage--;
@@ -144,13 +162,16 @@ jQuery(() => {
             urlParams.set("page", currentPage);
             window.history.replaceState({}, "", "movie-list.html?" + urlParams.toString());
             fetchMovieList();
+            storeCurrentQueryInLocalStorage();
         }
     });
+
     jQuery("#nextButton").click(function() {
         currentPage++;
         let urlParams = new URLSearchParams(window.location.search);
         urlParams.set("page", currentPage);
         window.history.replaceState({}, "", "movie-list.html?" + urlParams.toString());
         fetchMovieList();
+        storeCurrentQueryInLocalStorage();
     });
 });

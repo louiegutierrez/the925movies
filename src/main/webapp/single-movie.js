@@ -55,3 +55,16 @@ jQuery.ajax({
     url: "api/movie?id=" + movieId,
     success: (resultData) => handleMovieResult(resultData)
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    let lastQuery = localStorage.getItem("lastQueryString");
+    console.log("Retrieved lastQueryString =>", lastQuery);
+
+    if (lastQuery) {
+        let backLink = document.getElementById("back");
+        if (backLink) {
+            // If lastQuery is "?genre=Drama&page=2", then final link is "movie-list.html?genre=Drama&page=2"
+            backLink.href = "movie-list.html" + lastQuery;
+        }
+    }
+});
