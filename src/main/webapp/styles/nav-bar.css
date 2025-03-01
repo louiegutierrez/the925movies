@@ -79,10 +79,10 @@ body {
 
 .navbar {
     background-color: #333;
-    padding: 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 1rem;
 }
 
 .navbar ul {
@@ -110,7 +110,7 @@ body {
 #searchForm {
     display: flex;
     gap: 10px;
-    align-items: center
+    align-items: center;
 }
 
 #searchForm input {
@@ -123,6 +123,13 @@ body {
 #searchForm input[type="text"],
 #searchForm input[type="number"] {
     width: 150px;
+}
+
+#searchForm input[name="title"] {
+    width: 250px;
+    font-size: 16px;
+    padding: 10px;
+    border: 2px solid #007bff;
 }
 
 #searchForm button {
@@ -171,5 +178,9 @@ body {
     .genres a, .letters a {
         width: 100%;
         text-align: center;
+    }
+
+    #searchForm input[name="title"] {
+        width: 100%; /* Make it take full width on small screens */
     }
 }

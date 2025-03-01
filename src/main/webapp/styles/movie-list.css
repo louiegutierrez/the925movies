@@ -149,7 +149,7 @@ button {
     border-radius: 50%;
     width: 60px;
     height: 60px;
-    animation: spin .5ms linear infinite;
+    animation: spin 3ms linear infinite;
     margin: 0 auto 1rem auto;
 }
 
