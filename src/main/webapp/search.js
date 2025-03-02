@@ -1,5 +1,9 @@
 $(document).ready(function () {
-    let cache = {}; // Cache to store previously fetched results
+    // Cache key for storing autocomplete results in localStorage
+    const CACHE_KEY = "autocompleteCache";
+
+    // Retrieve cache from localStorage or initialize an empty object
+    let cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
 
     $("#searchForm").on("submit", function (event) {
         event.preventDefault();
@@ -72,8 +76,9 @@ $(document).ready(function () {
 
         console.log("Using suggestions:", suggestions);
 
-        // Store results in cache
+        // Store results in cache and update localStorage
         cache[query] = suggestions;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
 
         doneCallback({ suggestions: suggestions });
     }
