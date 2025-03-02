@@ -1,59 +1,47 @@
-# CS122B PROJECT 3
-## BY LEONARDO GUTIERREZ && MARTIN KIMBALL
+- # General
+  - #### Team: The925
 
-### HOSTED ON: https://www.the925movies.shop:8443/The925-1/
-#### VIDEO URL : https://www.youtube.com/watch?v=nhcdHmuJ6-U
+  - #### Names: Leonardo Gutierrez (leonarlg) && Martin Kimball (mkimbal1)
 
-#### MARTIN CONTRIBUTIONS:
-- Frontend for dashboard
-- Updated LoginFilter
-- Updated Login to include employee/user
-- Recaptcha implementation
+  - #### Project 5 Video Demo Link:
 
-#### LEONARDO CONTRIBUTIONS:
-- Majority of XML Parsing
-- Added https support
-- Custom domain implementation
-- Handled encrypted passwords
-- Dashboard backend
+  - #### Instruction of deployment:
+    - Accessible online through the925movies.shop/The925-1
+    - Deployment locally steps:
+      - mvn clean package in terminal
+      - sudo cp ./target/*.war [PATH_TO_TOMCAT]
+      - Then go to localhost:8080/The925-1
+
+  - #### Collaborations and Work Distribution:
+    - #### Martin Kimball:
+      - Full-Text Implementation
+      - Autocomplete Implementation
+      - Video Uploading
+    - #### Leonardo Gutierrez:
+      - Implemented AWS Load Balancing
+      - AWS Master/Slave Implementation
+      - GCP Implementation
+
+- # Connection Pooling
+  - #### Include the filename/path of all code/configuration files in GitHub of using JDBC Connection Pooling.
+    - src/main/webapp/META-INF/context.xml : Added two resources for Connection Pooling for master/slave
+    - src/main/webapp/WEB-INF/web.xml : Added References to both resources
+    - src/main/java/*Servlet.java : All Servlet files utilizes one of the two resources defined as moviedb_master or moviedb_slave
+
+  - #### Explain how Connection Pooling is utilized in the Fabflix code.
+    - Connection Pooling is utilized with two backend instances of SQL to offload and prevent overloading one instance
+    - The Code uses this to redirect writes and reads to separate instances in all *Servlet.java files
+
+  - #### Explain how Connection Pooling works with two backend SQL.
+    - Connection Pooling works in our project by redirecting writes to the master and reads to the slave(s)
+    - Then we have a load balancer that balances the work between the two equally
 
 
-## SUBSTRING MATCHING:
-- Implemented in SearchingServlet with % search_term % where it'll search for where it appears anywhere in the string
+- # Master/Slave
+  - #### Include the filename/path of all code/configuration files in GitHub of routing queries to Master/Slave SQL.
+    - src/main/java/*Servlet.java : All Servlet files utilizes Master/Slave SQL databases
+    - src/main/webapp/META-INF/context.xml : Added two resources for Connection Pooling for master/slave
 
-#### FILES W/ PreparedStatement
-- CartServlet (shopping cart)
-- FormServlet (Login Form)
-- GenreServlet (Getting Genres)
-- GetMetadataServlet (MetaData)
-- InsertStarServlet (Inserting New Star)
-- PaymentServlet (Making Payment to Sales)
-- SearchingServlet (Main Searching)
-- SingleMovieServlet (Getting Single Movie Info)
-- SingleStarServlet (Getting Single Star info)
-
-#### XML SPEED OPTIMIZATIONS:
-- Caching database into a map to do one query per movie, genres, stars
-- Batch inserts to keep sql inserts at a minimum and inserting at large amounts
-
-
-#### XML REPORT:
-=== DOM Import Summary ===
-Movies Added: 12058
-Inconsistent Movies (missing required fields): 13
-Duplicate Movies: 28
-Genres Added: 123
-Stars Added: 6006
-Duplicate Stars: 857
-Stars_in_Movies Added: 28137
-Genres_in_Movies Added: 9809
-Total Discrepancies: 26220
-
-- detailed reports after running can be found in log files:
-  - xmlParser/xml-importer/dom_import_summary.txt
-  - xmlParser/xml-importer/duplicate_movies.txt
-  - xmlParser/xml-importer/duplicate_stars.txt
-  - xmlParser/xml-importer/inconsistent_actors63.txt
-  - xmlParser/xml-importer/inconsistent_casts124.txt
-  - xmlParser/xml-importer/inconsistent_mains243.txt
-  - xmlParser/xml-importer/inconsistent_movies.txt
+  - #### How read/write requests were routed to Master/Slave SQL?
+    - Read/Write requests were redirected via their respective resources defined as moviedb_master or moviedv_slave
+    - Path to find those defined resources are above where the IPs are to SQL databases
