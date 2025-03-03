@@ -3,7 +3,7 @@
 
   - #### Names: Leonardo Gutierrez (leonarlg) && Martin Kimball (mkimbal1)
 
-  - #### Project 5 Video Demo Link: https://www.youtube.com/watch?v=8Sls8Gt7vfs
+  - #### Project 5 Video Demo Link: [https://www.youtube.com/watch?v=8Sls8Gt7vfs](https://youtu.be/s6pziFSjN_g)
 
   - #### Instruction of deployment:
     - Accessible online through the925movies.shop/The925-1
