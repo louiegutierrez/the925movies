@@ -40,6 +40,7 @@ $(document).ready(function () {
         // Check if the query exists in cache
         if (cache[query]) {
             console.log("Using cached results for:", query);
+            console.log(cache[query]);
             doneCallback({ suggestions: cache[query] });
             return;
         }

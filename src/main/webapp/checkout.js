@@ -2,8 +2,6 @@ $(document).ready(function () {
 
     $("#paymentForm").submit(function (event) {
         event.preventDefault();
-        console.log("Form submitted via AJAX");
-        console.log($(this).serialize());
         $.ajax({
             url: "api/payment",
             method: "POST",

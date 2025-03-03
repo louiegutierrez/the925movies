@@ -11,8 +11,6 @@ function getParameterByName(target) {
 }
 
 function handleMovieResult(resultData) {
-    console.log("handleStarResult: populating star table from resultData");
-    console.log(resultData);
     let singleMovieTitleElement = jQuery("#single_movie_title");
     let singleMovieYearElement = jQuery("#single_movie_year");
     let singleMovieDirectorElement = jQuery("#single_movie_director");
@@ -31,8 +29,6 @@ function handleMovieResult(resultData) {
     let star_ids = resultData[0]['all_star_ids'].split(", ");
 
     for (let i = 0; i < star_ids.length; i++) {
-        console.log(star_ids[i]);
-        console.log(star_names[i]);
         let star_id = star_ids[i];
         let star_name = star_names[i];
 
@@ -58,7 +54,6 @@ jQuery.ajax({
 
 document.addEventListener("DOMContentLoaded", function() {
     let lastQuery = localStorage.getItem("lastQueryString");
-    console.log("Retrieved lastQueryString =>", lastQuery);
 
     if (lastQuery) {
         let backLink = document.getElementById("back");

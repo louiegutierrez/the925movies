@@ -122,7 +122,6 @@ $(document).ready(function () {
 
 document.addEventListener("DOMContentLoaded", function() {
     let lastQuery = localStorage.getItem("lastQueryString");
-    console.log("Retrieved lastQueryString =>", lastQuery);
 
     if (lastQuery) {
         let backLink = document.getElementById("back");

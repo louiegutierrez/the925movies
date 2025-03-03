@@ -21,7 +21,6 @@ function populate_letters() {
 }
 
 function populate_genres(resultData) {
-    console.log(resultData);
     let genresElement = jQuery("#genres");
     let buttons = resultData.map(function (genre) {
         return $("<button>")

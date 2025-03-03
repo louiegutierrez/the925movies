@@ -1,8 +1,6 @@
 let cartMovies = $("#cart_table_body"); // Change this to target the <tbody>
 
 function handleSessionData(resultDataJson) {
-    console.log("handle session response");
-    console.log(resultDataJson);
 
     cartMovies.empty();
     let cartTotal = resultDataJson["total"] || 0; // Ensure cartTotal is defined
@@ -37,7 +35,6 @@ function handleSessionData(resultDataJson) {
 
 $(document).on("click", ".addToCart", function () {
     let movieId = $(this).data("movie-id");
-    console.log("WOW! Movie ID:", movieId);
     $.ajax({
         url: "api/cart",
         method: "POST",
@@ -46,7 +43,6 @@ $(document).on("click", ".addToCart", function () {
             movieId: movieId
         },
         success: function (response) {
-            console.log("Movie added to cart:", response);
             alert("Movie added to cart");
             updateCart();
         },
@@ -59,7 +55,6 @@ $(document).on("click", ".addToCart", function () {
 
 $(document).on("click", ".removeFromCart", function () {
     let movieId = $(this).data("movie-id");
-    console.log("WOW! Movie ID:", movieId);
     $.ajax({
         url: "api/cart",
         method: "POST",
@@ -68,7 +63,6 @@ $(document).on("click", ".removeFromCart", function () {
             movieId: movieId
         },
         success: function (response) {
-            console.log("Movie removed to cart:", response);
             alert("Movie removed to cart");
             updateCart();
         },
@@ -82,7 +76,6 @@ $(document).on("click", ".removeFromCart", function () {
 $(document).on("click", ".deleteFromCart", function () {
     let movieId = $(this).data("movie-id");
     let quantity = $(this).data("quantity");
-    console.log("WOW! Movie ID:", movieId);
     $.ajax({
         url: "api/cart",
         method: "POST",
@@ -91,7 +84,6 @@ $(document).on("click", ".deleteFromCart", function () {
             movieId: movieId
         },
         success: function (response) {
-            console.log("Movie removed to cart:", response);
             alert("Movie removed to cart");
             updateCart();
         },
@@ -116,7 +108,6 @@ updateCart();
 
 document.addEventListener("DOMContentLoaded", function() {
     let lastQuery = localStorage.getItem("lastQueryString");
-    console.log("Retrieved lastQueryString =>", lastQuery);
 
     if (lastQuery) {
         let backLink = document.getElementById("back");

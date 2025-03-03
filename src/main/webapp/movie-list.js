@@ -101,7 +101,6 @@ function storeCurrentQueryInLocalStorage() {
     // we want to store "?genre=Drama&page=2"
     let currentSearch = window.location.search;
     localStorage.setItem("lastQueryString", currentSearch);
-    console.log("Storing lastQueryString =>", currentSearch);
 }
 
 function initializePage() {

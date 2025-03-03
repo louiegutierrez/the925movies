@@ -2,8 +2,6 @@ $.ajax({
     url: "api/payment",
     method: "GET",
     success: (resultDataJson) => {
-        console.log("handle session response");
-        console.log(resultDataJson);
         let tableBody = $("#salesTableBody");
 
         // Loop through sales data and append to table

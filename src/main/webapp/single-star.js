@@ -15,7 +15,6 @@ function getParameterByName(target) {
 
 function handleStarResult(resultData) {
     console.log("handleStarResult: populating star table from resultData");
-    console.log(resultData);
     let singleStarNameElement = jQuery("#single_star_name");
     let singleStarBirthElement = jQuery("#single_star_birth");
 
@@ -35,7 +34,6 @@ function handleStarResult(resultData) {
 }
 
 let starId = getParameterByName('id');
-console.log(starId);
 jQuery.ajax({
     dataType: "json",
     method: "GET",
@@ -45,7 +43,6 @@ jQuery.ajax({
 
 document.addEventListener("DOMContentLoaded", function() {
     let lastQuery = localStorage.getItem("lastQueryString");
-    console.log("Retrieved lastQueryString =>", lastQuery);
 
     if (lastQuery) {
         let backLink = document.getElementById("back");
