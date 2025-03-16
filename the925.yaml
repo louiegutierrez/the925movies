@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: the925  # Updated name
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: the925  # Updated label
+  template:
+    metadata:
+      labels:
+        app: the925  # Updated label
+    spec:
+      containers:
+        - name: the925-container  # Updated container name
+          image: makimball/cs122b-p5-the925:latest  # Updated image
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: the925-service  # Updated service name
+spec:
+  selector:
+    app: the925  # Updated label
+  ports:
+    - name: http
+      port: 8080
+  type: ClusterIP
