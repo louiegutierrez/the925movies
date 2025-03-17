@@ -24,7 +24,7 @@ spec:
                   number: 8080
 
           # Serve /login.html from login service
-          - path: /login.html
+          - path: /login*
             pathType: ImplementationSpecific
             backend:
               service:
