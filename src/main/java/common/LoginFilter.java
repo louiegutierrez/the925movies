@@ -1,10 +1,11 @@
 package common;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
@@ -15,15 +16,14 @@ public class LoginFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        HttpSession session = httpRequest.getSession(false);
+
+        String requestURI = httpRequest.getRequestURI();
+        String contextPath = httpRequest.getContextPath();
 
         // Prevent caching of protected pages
         httpResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
         httpResponse.setHeader("Pragma", "no-cache"); // HTTP 1.0
         httpResponse.setHeader("Expires", "0"); // Proxies
-
-        String requestURI = httpRequest.getRequestURI();
-        String contextPath = httpRequest.getContextPath();
 
         // Allow static resources to pass through
         if (requestURI.startsWith(contextPath + "/static/") ||
@@ -40,35 +40,29 @@ public class LoginFilter implements Filter {
         boolean isLoginPage = requestURI.endsWith("login.html");
         boolean isApiEndpoint = requestURI.startsWith(contextPath + "/api/login");
 
-        // Allow login-related requests to pass through
+        // Allow login requests to pass through
         if (isLoginRequest || isLoginPage || isApiEndpoint) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Check if the user is logged in
-        boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
+        // Retrieve JWT from cookies
+        String jwtToken = JwtUtil.getCookieValue(httpRequest, "jwtToken");
+        Claims claims = JwtUtil.validateToken(jwtToken);
 
-        if (isLoggedIn) {
-            // Check if the user is trying to access _dashboard.html
+        if (claims != null) {
+            // Extract user role if needed
+            String userRole = claims.get("role", String.class);
             boolean isDashboardRequest = requestURI.endsWith("_dashboard.html");
 
-            if (isDashboardRequest) {
-                // Check if the user is an employee
-                String userRole = (String) session.getAttribute("role");
-                if ("employee".equals(userRole)) {
-                    // Allow access to _dashboard.html for employees
-                    chain.doFilter(request, response);
-                } else {
-                    // Redirect non-employees to browse.html
-                    httpResponse.sendRedirect(contextPath + "/browse.html");
-                }
-            } else {
-                // Allow access to other pages for logged-in users
-                chain.doFilter(request, response);
+            if (isDashboardRequest && !"employee".equals(userRole)) {
+                httpResponse.sendRedirect(contextPath + "/browse.html");
+                return;
             }
+
+            chain.doFilter(request, response); // Allow request to proceed
         } else {
-            // Redirect unauthenticated users to the login page
+            // Redirect to login if JWT is invalid or missing
             httpResponse.sendRedirect(loginURI);
         }
     }
