@@ -4,18 +4,18 @@ metadata:
   name: the925-ingress-multi
   namespace: default
   annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"             # Enables regex matching for paths
-    nginx.ingress.kubernetes.io/affinity: "cookie"            # Enables session affinity (sticky sessions)
-    nginx.ingress.kubernetes.io/session-cookie-name: "stickounet" # Name of the session cookie
-    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"  # Expires in 2 days
-    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"  # Max age for the cookie (2 days)
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "stickounet"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
 spec:
   ingressClassName: nginx
   rules:
     - http:
         paths:
           # Route for login API calls
-          - path: /cs122b-project5-the925/api/login
+          - path: /The925/api/login
             pathType: Prefix
             backend:
               service:
@@ -23,8 +23,8 @@ spec:
                 port:
                   number: 8080
 
-          # Regex-style route for login
-          - path: /cs122b-project5-the925/login.*
+          # Regex-style route for anything under /The925/login...
+          - path: /The925/login.*
             pathType: ImplementationSpecific
             backend:
               service:
