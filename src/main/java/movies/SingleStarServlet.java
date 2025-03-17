@@ -1,3 +1,5 @@
+package movies;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
@@ -16,7 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-@WebServlet(name = "SingleStarServlet", urlPatterns = "/api/star")
+@WebServlet(name = "movies.SingleStarServlet", urlPatterns = "/api/star")
 public class SingleStarServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;

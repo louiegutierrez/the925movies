@@ -1,3 +1,5 @@
+package movies;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
@@ -19,7 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@WebServlet(name = "GetMetadataServlet", urlPatterns = "/api/get_metadata")
+@WebServlet(name = "movies.GetMetadataServlet", urlPatterns = "/api/get_metadata")
 public class GetMetadataServlet extends HttpServlet {
     private DataSource dataSource;
 

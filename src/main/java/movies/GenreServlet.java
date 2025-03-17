@@ -1,3 +1,5 @@
+package movies;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -17,7 +19,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-@WebServlet(name = "GenreServlet", urlPatterns = "/api/genres")
+@WebServlet(name = "movies.GenreServlet", urlPatterns = "/api/genres")
 public class GenreServlet extends HttpServlet {
     private DataSource dataSource;
 
@@ -55,7 +57,7 @@ public class GenreServlet extends HttpServlet {
         out.print(new Gson().toJson(genres));
         out.flush();
 
-        System.out.println("GenreServlet: Genres fetched successfully.");
+        System.out.println("movies.GenreServlet: Genres fetched successfully.");
     }
 }
 

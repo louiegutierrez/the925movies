@@ -46,15 +46,89 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>
+        <finalName>cs122b-project5-the925</finalName>
+        <sourceDirectory>${endpointDir}</sourceDirectory>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.4.0</version>
+                <configuration>
+                    <warSourceDirectory>${project.basedir}/src/main/webapp</warSourceDirectory>
+                    <warSourceExcludes>${excludes}</warSourceExcludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/common</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>login</id>
+            <properties>
+                <endpointDir>src/main/java/login</endpointDir>
+                <excludes>**/_dashboard.html, **/_dashboard.js, **/browse.js, **/browse.html, **/cart.js, **/cart.html,
+                **/checkout.html, **/checkout.js, **/confirmation.html, **/confirmation.js, **/movie-list.html, **/movie-list.js,
+                **/search.js, **/single-movie.html, **/single-movie.js, **/single-star.html, **/single-star.js</excludes>
+            </properties>
+        </profile>
+        <profile>
+            <id>movies</id>
+            <properties>
+                <endpointDir>src/main/java/movies</endpointDir>
+                <excludes>**/login.html, **/login.js</excludes>
+            </properties>
+        </profile>
+        <profile>
+            <id>default</id>
+            <properties>
+                <endpointDir>src/main</endpointDir>
+                <excludes/>
+            </properties>
+        </profile>
+    </profiles>
 </project>

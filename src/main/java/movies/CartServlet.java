@@ -1,3 +1,5 @@
+package movies;
+
 import com.google.gson.JsonObject;
 
 import jakarta.servlet.ServletConfig;
@@ -18,7 +20,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebServlet(name = "CartServlet", urlPatterns = "/api/cart")
+@WebServlet(name = "movies.CartServlet", urlPatterns = "/api/cart")
 public class CartServlet extends HttpServlet {
     private DataSource dataSource;
 

@@ -1,3 +1,5 @@
+package movies;
+
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,9 +16,8 @@ import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.io.PrintWriter;
-import java.util.Objects;
 
-@WebServlet(name = "AddMovieServlet", urlPatterns = "/api/add_movie")
+@WebServlet(name = "movies.AddMovieServlet", urlPatterns = "/api/add_movie")
 public class AddMovieServlet extends HttpServlet {
     private DataSource dataSource;
 
@@ -44,7 +45,7 @@ public class AddMovieServlet extends HttpServlet {
         String genreName = request.getParameter("genre_name");
         String director = request.getParameter("director");
 
-        System.out.println("Star name: " + starName + " Genre name: " + genreName +
+        System.out.println("Star name: " + starName + " movies.Genre name: " + genreName +
                 " Director: " + director + " Title: " + title + " Year: " + yearStr);
 
         if (title == null || yearStr == null || director == null || genreName == null || starName == null) {

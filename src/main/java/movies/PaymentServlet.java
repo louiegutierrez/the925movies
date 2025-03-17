@@ -1,3 +1,5 @@
+package movies;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -20,7 +22,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-@WebServlet(name = "PaymentServlet", urlPatterns = "/api/payment")
+@WebServlet(name = "movies.PaymentServlet", urlPatterns = "/api/payment")
 public class PaymentServlet extends HttpServlet {
     private DataSource dataSource;
 

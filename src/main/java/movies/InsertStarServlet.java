@@ -1,3 +1,5 @@
+package movies;
+
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,7 +14,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
 
-@WebServlet(name = "InsertStarServlet", urlPatterns = "/api/insert_star")
+@WebServlet(name = "movies.InsertStarServlet", urlPatterns = "/api/insert_star")
 public class InsertStarServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 

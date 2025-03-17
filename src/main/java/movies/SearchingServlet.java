@@ -1,3 +1,5 @@
+package movies;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -16,7 +18,7 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.util.*;
 
-@WebServlet(name = "SearchingServlet", urlPatterns = "/api/search")
+@WebServlet(name = "movies.SearchingServlet", urlPatterns = "/api/search")
 public class SearchingServlet extends HttpServlet {
     private DataSource dataSource;
 

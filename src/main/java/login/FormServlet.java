@@ -1,3 +1,5 @@
+package login;
+
 import com.google.gson.JsonObject;
 
 import javax.naming.InitialContext;
@@ -19,7 +21,7 @@ import java.sql.ResultSet;
 
 import org.jasypt.util.password.StrongPasswordEncryptor;
 
-@WebServlet(name = "FormServlet", urlPatterns = "/api/login")
+@WebServlet(name = "login.FormServlet", urlPatterns = "/api/login")
 public class FormServlet extends HttpServlet {
     private DataSource dataSource;
 
@@ -52,6 +54,9 @@ public class FormServlet extends HttpServlet {
                 session.setAttribute("user", "employee");
                 session.setAttribute("role", "employee");
 
+                System.out.println("Session ID: " + session.getId()); // Log session ID
+                System.out.println("Session Attributes: " + session.getAttribute("user") + " Role: " + session.getAttribute("role"));
+
                 responseJsonObject.addProperty("status", "success");
                 responseJsonObject.addProperty("message", "success");
                 responseJsonObject.addProperty("role", "employee");
@@ -70,6 +75,9 @@ public class FormServlet extends HttpServlet {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", rs.getInt("id"));
                 session.setAttribute("role", "customer");
+
+                System.out.println("Session ID: " + session.getId()); // Log session ID
+                System.out.println("Session Attributes: " + session.getAttribute("user") + " Role: " + session.getAttribute("role"));
 
                 // Return success response
                 responseJsonObject.addProperty("status", "success");
