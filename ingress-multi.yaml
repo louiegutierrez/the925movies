@@ -4,6 +4,7 @@ metadata:
   name: the925-ingress-multi
   namespace: default
   annotations:
+    # You can keep or remove use-regex depending on whether you need regex paths
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "stickounet"
@@ -14,7 +15,7 @@ spec:
   rules:
     - http:
         paths:
-          # Route for login API calls
+          # 1) /api/login -> your POST login endpoint
           - path: /api/login
             pathType: Prefix
             backend:
@@ -23,16 +24,16 @@ spec:
                 port:
                   number: 8080
 
-          # Regex-style route for anything under /The925/login...
-          - path: /login.*
-            pathType: ImplementationSpecific
+          # 2) Exact path for your static login page
+          - path: /login.html
+            pathType: Exact
             backend:
               service:
                 name: the925-login-service
                 port:
                   number: 8080
 
-          # Catch-all route for everything else
+          # 3) Everything else -> movies service
           - path: /
             pathType: Prefix
             backend:
