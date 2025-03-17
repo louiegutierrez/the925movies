@@ -15,7 +15,7 @@ spec:
     - http:
         paths:
           # Route for login API calls
-          - path: /The925/api/login
+          - path: /api/login
             pathType: Prefix
             backend:
               service:
@@ -24,7 +24,7 @@ spec:
                   number: 8080
 
           # Regex-style route for anything under /The925/login...
-          - path: /The925/login.*
+          - path: /login.*
             pathType: ImplementationSpecific
             backend:
               service:
