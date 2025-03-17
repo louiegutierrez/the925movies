@@ -9,15 +9,22 @@ metadata:
     nginx.ingress.kubernetes.io/session-cookie-name: "stickounet"
     nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
-    # This is the key rewrite annotation:
-    nginx.ingress.kubernetes.io/rewrite-target: /The925/api/$1
 spec:
   ingressClassName: nginx
   rules:
     - http:
         paths:
-          # Rewrite anything under /api/... to /The925/api/...
-          - path: /api/(.*)
+          # Route for login API calls
+          - path: /api/login
+            pathType: Prefix
+            backend:
+              service:
+                name: the925-login-service
+                port:
+                  number: 8080
+
+          # Regex-style route for anything under /The925/login...
+          - path: /login.*
             pathType: ImplementationSpecific
             backend:
               service:
@@ -25,7 +32,7 @@ spec:
                 port:
                   number: 8080
 
-          # Catch-all for everything else
+          # Catch-all route for everything else
           - path: /
             pathType: Prefix
             backend:
