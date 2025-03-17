@@ -40,9 +40,11 @@ public class LoginFilter implements Filter {
         boolean isLoginPage = requestURI.endsWith("login.html");
         boolean isLoginJson = requestURI.endsWith("login.js");
         boolean isApiEndpoint = requestURI.contains("/api/login");
+        boolean isGetRequest = "GET".equalsIgnoreCase(httpRequest.getMethod());
+
 
         // Allow login requests to pass through
-        if (isLoginRequest || isLoginPage || isApiEndpoint || isLoginJson) {
+        if (isLoginRequest || isLoginPage || isApiEndpoint || isLoginJson || isGetRequest) {
             chain.doFilter(request, response);
             return;
         }
