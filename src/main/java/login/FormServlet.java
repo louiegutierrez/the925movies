@@ -1,7 +1,7 @@
-package login;
+package java.login;
 
+import common.JwtUtil;
 import com.google.gson.JsonObject;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import jakarta.servlet.ServletConfig;
@@ -10,15 +10,17 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 
 @WebServlet(name = "login.FormServlet", urlPatterns = "/api/login")
@@ -43,60 +45,48 @@ public class FormServlet extends HttpServlet {
         JsonObject responseJsonObject = new JsonObject();
 
         try (Connection conn = dataSource.getConnection()) {
-            // first check if it's an employee
-            String employeeQuery = "SELECT * FROM employees WHERE email = ?";
-            PreparedStatement employeePs = conn.prepareStatement(employeeQuery);
-            employeePs.setString(1, username);
-            ResultSet employeeRs = employeePs.executeQuery();
-            if (employeeRs.next() && new StrongPasswordEncryptor().checkPassword(password, employeeRs.getString("password"))) {
-                HttpSession session = request.getSession();
-                System.out.println("Employee logged in");
-                session.setAttribute("user", "employee");
-                session.setAttribute("role", "employee");
+            String userRole = "customer";
 
-                System.out.println("Session ID: " + session.getId()); // Log session ID
-                System.out.println("Session Attributes: " + session.getAttribute("user") + " Role: " + session.getAttribute("role"));
-
-                responseJsonObject.addProperty("status", "success");
-                responseJsonObject.addProperty("message", "success");
-                responseJsonObject.addProperty("role", "employee");
-                out.write(responseJsonObject.toString());
-                out.close();
-                return;
-            }
-            // customer if not employee
-            String query = "SELECT * FROM customers WHERE email = ?";
+            // Check if the user is an employee
+            String query = "SELECT * FROM employees WHERE email = ?";
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next() && new StrongPasswordEncryptor().checkPassword(password, rs.getString("password"))) {
-                // Set session attribute
-                HttpSession session = request.getSession();
-                session.setAttribute("user", rs.getInt("id"));
-                session.setAttribute("role", "customer");
-
-                System.out.println("Session ID: " + session.getId()); // Log session ID
-                System.out.println("Session Attributes: " + session.getAttribute("user") + " Role: " + session.getAttribute("role"));
-
-                // Return success response
-                responseJsonObject.addProperty("status", "success");
-                responseJsonObject.addProperty("message", "success");
-                responseJsonObject.addProperty("role", "customer");
+                userRole = "employee";
             } else {
-                // Return error response
-                responseJsonObject.addProperty("status", "fail");
-                responseJsonObject.addProperty("message", "Incorrect email or password.");
+                // Check if the user is a customer
+                query = "SELECT * FROM customers WHERE email = ?";
+                ps = conn.prepareStatement(query);
+                ps.setString(1, username);
+                rs = ps.executeQuery();
+                if (!(rs.next() && new StrongPasswordEncryptor().checkPassword(password, rs.getString("password")))) {
+                    responseJsonObject.addProperty("status", "fail");
+                    responseJsonObject.addProperty("message", "Incorrect email or password.");
+                    out.write(responseJsonObject.toString());
+                    out.close();
+                    return;
+                }
             }
 
-            // Write JSON response
+            // Generate JWT Token
+            Map<String, Object> claims = new HashMap<>();
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            claims.put("loginTime", dateFormat.format(new Date()));
+            claims.put("role", userRole);
+            String token = JwtUtil.generateToken(username, claims);
+            JwtUtil.updateJwtCookie(request, response, token);
+
+            // Return success response
+            responseJsonObject.addProperty("status", "success");
+            responseJsonObject.addProperty("message", "success");
+            responseJsonObject.addProperty("role", userRole);
             out.write(responseJsonObject.toString());
         } catch (Exception e) {
-            // Handle database errors
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("errorMessage", e.getMessage());
             out.write(jsonObject.toString());
-
             request.getServletContext().log("Error:", e);
             response.setStatus(500);
         } finally {

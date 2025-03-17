@@ -1,4 +1,4 @@
-package common;
+package java.common;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;

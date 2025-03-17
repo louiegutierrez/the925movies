@@ -1,4 +1,4 @@
-package movies;
+package java.movies;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

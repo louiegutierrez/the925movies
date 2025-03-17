@@ -1,4 +1,4 @@
-package movies;
+package java.movies;
 
 import java.io.IOException;
 import java.io.PrintWriter;
