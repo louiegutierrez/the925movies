@@ -38,7 +38,7 @@ public class LoginFilter implements Filter {
         String loginURI = contextPath + "/login.html";
         boolean isLoginRequest = requestURI.equals(loginURI);
         boolean isLoginPage = requestURI.endsWith("login.html");
-        boolean isApiEndpoint = requestURI.startsWith(contextPath + "/api/login");
+        boolean isApiEndpoint = requestURI.contains("/api/login");
 
         // Allow login requests to pass through
         if (isLoginRequest || isLoginPage || isApiEndpoint) {
