@@ -35,13 +35,14 @@ public class LoginFilter implements Filter {
             return;
         }
 
-        String loginURI = contextPath + "/login.html";
+        String loginURI = "/login.html";
         boolean isLoginRequest = requestURI.equals(loginURI);
         boolean isLoginPage = requestURI.endsWith("login.html");
+        boolean isLoginJson = requestURI.endsWith("login.js");
         boolean isApiEndpoint = requestURI.contains("/api/login");
 
         // Allow login requests to pass through
-        if (isLoginRequest || isLoginPage || isApiEndpoint) {
+        if (isLoginRequest || isLoginPage || isApiEndpoint || isLoginJson) {
             chain.doFilter(request, response);
             return;
         }
