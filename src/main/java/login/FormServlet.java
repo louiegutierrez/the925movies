@@ -51,6 +51,8 @@ public class FormServlet extends HttpServlet {
 
         JsonObject responseJsonObject = new JsonObject();
 
+        System.out.println("[LOGIN] User attempting login: " + username);
+
         try (Connection conn = dataSource.getConnection()) {
             String userRole = "customer";
 
@@ -85,6 +87,9 @@ public class FormServlet extends HttpServlet {
             String token = JwtUtil.generateToken(username, claims);
             JwtUtil.updateJwtCookie(request, response, token);
 
+            request.getServletContext().log("[LOGIN] Login for user " + username + " successful");
+            System.out.println("[LOGIN] Login for user " + username + " successful");
+
             // Return success response
             responseJsonObject.addProperty("status", "success");
             responseJsonObject.addProperty("message", "success");
@@ -92,6 +97,8 @@ public class FormServlet extends HttpServlet {
             out.write(responseJsonObject.toString());
         } catch (Exception e) {
             JsonObject jsonObject = new JsonObject();
+            request.getServletContext().log("[LOGIN] Login failed for user: " + username);
+
             jsonObject.addProperty("errorMessage", e.getMessage());
             out.write(jsonObject.toString());
             request.getServletContext().log("Error:", e);
