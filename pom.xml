@@ -126,7 +126,7 @@
         <profile>
             <id>default</id>
             <properties>
-                <endpointDir>src/main</endpointDir>
+                <endpointDir>src/main/java</endpointDir>
                 <excludes/>
             </properties>
         </profile>
