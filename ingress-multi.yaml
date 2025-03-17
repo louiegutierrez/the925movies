@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: the925-ingress
+  name: the925-ingress-multi
   namespace: default
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"             # Enables regex matching for paths
