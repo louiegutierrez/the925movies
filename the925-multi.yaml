@@ -1,0 +1,82 @@
+# the925-movies
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: the925-movies
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: the925-movies
+  template:
+    metadata:
+      labels:
+        app: the925-movies
+    spec:
+      containers:
+        - name: the925-movies-container
+          image: makimball/cs122b-p5-the925-movies:v1
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: the925-movies-service
+spec:
+  selector:
+    app: the925-movies
+  ports:
+    - name: http
+      port: 8080
+  type: ClusterIP
+
+# the925-login
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: the925-login
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: the925-login
+  template:
+    metadata:
+      labels:
+        app: the925-login
+    spec:
+      containers:
+        - name: the925-login-container
+          image: makimball/cs122b-p5-the925-login:v1
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: the925-login-service
+spec:
+  selector:
+    app: the925-login
+  ports:
+    - name: http
+      port: 8080
+  type: ClusterIP
