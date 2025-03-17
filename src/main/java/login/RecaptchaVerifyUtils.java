@@ -1,4 +1,4 @@
-package java.login;
+package login;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

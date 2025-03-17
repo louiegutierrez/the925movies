@@ -1,4 +1,4 @@
-package java.login;
+package login;
 
 import common.JwtUtil;
 import com.google.gson.JsonObject;

@@ -1,4 +1,4 @@
-package java.movies;
+package movies;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;

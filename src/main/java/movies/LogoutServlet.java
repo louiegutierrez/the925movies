@@ -1,4 +1,4 @@
-package java.movies;
+package movies;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
