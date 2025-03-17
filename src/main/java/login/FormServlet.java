@@ -1,6 +1,6 @@
 package java.login;
 
-import java.common.JwtUtil;
+import common.JwtUtil;
 import com.google.gson.JsonObject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
