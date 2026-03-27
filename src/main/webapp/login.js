@@ -43,7 +43,7 @@ function submitLoginForm(event) {
     });
 }
 
-function createLoginForm() {
+function createLoginForm(siteKey) {
     let loginFormElement = $("#login_form");
     let form = $("<form>", { id: "login_form_element" });
 
@@ -57,7 +57,7 @@ function createLoginForm() {
             $("<input>", { type: "password", id: "password", name: "password", class: "form-control", required: true })
         ),
         $("<div>", { class: "form-group" }).append(
-            $("<div>", { class: "g-recaptcha", "data-sitekey": "6LfpZtMqAAAAALDMnx3Frw2kDYGYIvslpdAyaTCy" })
+            $("<div>", { class: "g-recaptcha", "data-sitekey": siteKey })
         ),
         $("<button>", { text: "Login", type: "submit", class: "btn btn-primary" })
     );
@@ -68,5 +68,18 @@ function createLoginForm() {
 }
 
 $(document).ready(function () {
-    createLoginForm();
+    $.ajax({
+        url: "api/recaptcha-site-key",
+        method: "GET",
+        success: function (resultData) {
+            if (resultData["status"] === "success" && resultData["siteKey"]) {
+                createLoginForm(resultData["siteKey"]);
+                return;
+            }
+            alert(resultData["message"] || "Unable to load reCAPTCHA site key.");
+        },
+        error: function () {
+            alert("Unable to load reCAPTCHA site key.");
+        }
+    });
 });

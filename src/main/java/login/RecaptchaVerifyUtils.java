@@ -11,7 +11,15 @@ import java.net.URL;
 public class RecaptchaVerifyUtils {
 
     public static final String SITE_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
-    public static final String SECRET_KEY ="6LfpZtMqAAAAAFPsVB2T9r3Uqk4rKusTdfORkpjA";
+    private static final String SECRET_KEY = loadRecaptchaSecret();
+
+    private static String loadRecaptchaSecret() {
+        String secretKey = System.getenv("RECAPTCHA_SECRET_KEY");
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalStateException("Missing required environment variable: RECAPTCHA_SECRET_KEY");
+        }
+        return secretKey;
+    }
 
     public static void verify(String gRecaptchaResponse) throws Exception {
         URL verifyUrl = new URL(SITE_VERIFY_URL);

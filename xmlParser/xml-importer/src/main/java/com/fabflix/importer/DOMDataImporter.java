@@ -45,6 +45,27 @@ public class DOMDataImporter {
     // Database connection
     private static Connection connection;
 
+    private static String getRequiredEnv(String primaryKey, String fallbackKey) {
+        String value = System.getenv(primaryKey);
+        if (value != null && !value.isBlank()) {
+            return value;
+        }
+
+        if (fallbackKey != null) {
+            String fallbackValue = System.getenv(fallbackKey);
+            if (fallbackValue != null && !fallbackValue.isBlank()) {
+                return fallbackValue;
+            }
+        }
+
+        if (fallbackKey == null) {
+            throw new IllegalStateException("Missing required environment variable: " + primaryKey);
+        }
+        throw new IllegalStateException(
+                "Missing required environment variable: " + primaryKey + " (fallback checked: " + fallbackKey + ")"
+        );
+    }
+
     // --------------------------
     // Custom ErrorHandler to log errors and continue
     // --------------------------
@@ -77,10 +98,10 @@ public class DOMDataImporter {
             logDuplicateStars = new PrintWriter(new FileWriter("duplicate_stars.txt", false));
             logSummary = new PrintWriter(new FileWriter("dom_import_summary.txt", false));
 
-            // Connect to DB (adjust credentials as needed)
-            String url = "jdbc:mysql://localhost:3306/moviedb?useUnicode=true&characterEncoding=ISO-8859-1";
-            String user = "mytestuser";
-            String password = "My6$Password";
+            // Connect to DB using importer-specific env vars with DB_* fallback.
+            String url = getRequiredEnv("IMPORT_DB_URL", "DB_MASTER_URL");
+            String user = getRequiredEnv("IMPORT_DB_USER", "DB_MASTER_USER");
+            String password = getRequiredEnv("IMPORT_DB_PASSWORD", "DB_MASTER_PASSWORD");
             connection = DriverManager.getConnection(url, user, password);
             connection.setAutoCommit(false);
 

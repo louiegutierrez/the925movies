@@ -14,9 +14,21 @@ import java.util.Date;
 import java.util.Map;
 
 public class JwtUtil {
-    private static final String SECRET_KEY = "MY+SECRETKEY+er9dfa8erfjf34dwe5fd5wqqa3adfdf";
-    private static final SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET_KEY));
+    private static final SecretKey key = loadSigningKey();
     private static final long EXPIRATION_TIME = 86400000; // 1 day
+
+    private static SecretKey loadSigningKey() {
+        String encodedKey = System.getenv("JWT_SECRET_BASE64");
+        if (encodedKey == null || encodedKey.isBlank()) {
+            throw new IllegalStateException("Missing required environment variable: JWT_SECRET_BASE64");
+        }
+
+        try {
+            return Keys.hmacShaKeyFor(Base64.getDecoder().decode(encodedKey));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("JWT_SECRET_BASE64 must be valid Base64 and strong enough for HS256", e);
+        }
+    }
 
     // Generate a JWT token
     // claims can be used as session to store anything related to the user

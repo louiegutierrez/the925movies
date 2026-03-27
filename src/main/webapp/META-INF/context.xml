@@ -8,9 +8,9 @@
                 factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
                 maxTotal="100" maxIdle="30" maxWaitMillis="10000"
                 driverClassName="com.mysql.cj.jdbc.Driver"
-                url="jdbc:mysql://mysql-primary:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
-                username="mytestuser"
-                password="My6$Password"
+                url="${env.DB_MASTER_URL}"
+                username="${env.DB_MASTER_USER}"
+                password="${env.DB_MASTER_PASSWORD}"
         />
         <Resource
                 name="jdbc/moviedb_slave"
@@ -19,10 +19,10 @@
                 factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
                 maxTotal="100" maxIdle="30" maxWaitMillis="10000"
                 driverClassName="com.mysql.cj.jdbc.Driver"
-                url="jdbc:mysql://mysql-secondary:3306/moviedb?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false&amp;cachePrepStmts=true"
-                username="mytestuser"
-                password="My6$Password"
+                url="${env.DB_SLAVE_URL}"
+                username="${env.DB_SLAVE_USER}"
+                password="${env.DB_SLAVE_PASSWORD}"
         />
-        <!--                username="mytestuser"-->
-        <!--                password="My6$Password"-->
+        <!--                username="${env.DB_MASTER_USER}"-->
+        <!--                password="${env.DB_MASTER_PASSWORD}"-->
 </Context>

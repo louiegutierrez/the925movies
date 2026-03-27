@@ -1,4 +1,26 @@
 # the925-movies
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: the925-config
+data:
+  DB_MASTER_URL: jdbc:mysql://mysql-primary:3306/moviedb?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false&cachePrepStmts=true
+  DB_SLAVE_URL: jdbc:mysql://mysql-secondary:3306/moviedb?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false&cachePrepStmts=true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: the925-secrets
+type: Opaque
+stringData:
+  DB_MASTER_USER: replace-with-db-master-user
+  DB_MASTER_PASSWORD: replace-with-db-master-password
+  DB_SLAVE_USER: replace-with-db-slave-user
+  DB_SLAVE_PASSWORD: replace-with-db-slave-password
+  JWT_SECRET_BASE64: replace-with-base64-hs256-secret
+  RECAPTCHA_SECRET_KEY: replace-with-recaptcha-secret
+  RECAPTCHA_SITE_KEY: replace-with-recaptcha-site-key
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,6 +42,11 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: the925-config
+            - secretRef:
+                name: the925-secrets
           resources:
             limits:
               cpu: "1"
@@ -62,6 +89,11 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: the925-config
+            - secretRef:
+                name: the925-secrets
           resources:
             limits:
               cpu: "1"
