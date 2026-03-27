@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-FabFlix is a full-stack movie browsing and purchasing application. The backend is a **Java Jakarta EE WAR** deployed on **Tomcat 10**, exposing a JSON REST API. The frontend is a **React + TypeScript SPA** (Vite + Tailwind CSS + shadcn/ui) that talks to the backend via `/api/*`.
+Application is a full-stack movie browsing and purchasing application based on one of our class projects. The backend is a **Java Jakarta EE WAR** deployed on **Tomcat 10**, exposing a JSON REST API. The frontend is a **React + TypeScript SPA** (Vite + Tailwind CSS + shadcn/ui) that talks to the backend via `/api/*`.
 
 ---
 
