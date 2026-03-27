@@ -1,5 +1,12 @@
+# Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -42,3 +49,12 @@ build/
 .env
 .env.*
 !.env.example
+
+### Seed data (large SQL dumps and Stanford XML files) ###
+data/data.sql
+data/stanford-movies/
+
+### XML importer build artifacts and logs ###
+xmlParser/xml-importer/target/
+xmlParser/xml-importer/stanford-movies/
+xmlParser/xml-importer/*.txt
